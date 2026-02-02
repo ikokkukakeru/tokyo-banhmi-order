@@ -1,0 +1,530 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TOKYO BANH MI STAND - ご注文</title>
+    <link href="/app.css" rel="stylesheet" />
+    <style>
+      /* TOKYO BANH MI STAND - Vietnamese sandwich shop theme */
+      :root {
+        --banhmi-orange: #E85D04;
+        --banhmi-orange-light: #F48C06;
+        --banhmi-orange-dark: #D00000;
+        --banhmi-green: #2D6A4F;
+        --banhmi-green-light: #40916C;
+        --banhmi-green-pale: #95D5B2;
+        --banhmi-cream: #FFF8F0;
+        --banhmi-white: #FFFFFF;
+        --banhmi-brown: #6B4423;
+      }
+
+      body.banhmi-page {
+        font-family: 'Hiragino Kaku Gothic ProN', 'Yu Gothic', 'Meiryo', sans-serif;
+        background: linear-gradient(135deg, var(--banhmi-cream) 0%, #FFE5D9 50%, #E8F5E9 100%);
+        margin: 0;
+        min-height: 100vh;
+        padding: 24px 16px;
+      }
+
+      .banhmi-container {
+        max-width: 480px;
+        margin: 0 auto;
+      }
+
+      .banhmi-header {
+        text-align: center;
+        margin-bottom: 24px;
+      }
+
+      .banhmi-header h1 {
+        font-size: 1.5rem;
+        color: var(--banhmi-orange);
+        margin: 0;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+      }
+
+      .banhmi-header p {
+        font-size: 0.85rem;
+        color: var(--banhmi-brown);
+        margin: 4px 0 0 0;
+      }
+
+      .product-card {
+        background: var(--banhmi-white);
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 24px;
+        box-shadow: 0 4px 20px rgba(232, 93, 4, 0.15);
+        border: 2px solid var(--banhmi-green-pale);
+      }
+
+      .product-card .product-badge {
+        display: inline-block;
+        background: var(--banhmi-green);
+        color: white;
+        font-size: 0.7rem;
+        padding: 4px 12px;
+        border-radius: 20px;
+        margin-bottom: 12px;
+        font-weight: 600;
+      }
+
+      .product-card .product-name {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--banhmi-brown);
+        margin: 0 0 8px 0;
+        line-height: 1.4;
+      }
+
+      .product-card .product-price {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--banhmi-orange);
+        margin: 0 0 16px 0;
+      }
+
+      .product-card .product-description {
+        font-size: 0.9rem;
+        color: var(--banhmi-brown);
+        line-height: 1.6;
+        margin: 0;
+        opacity: 0.9;
+      }
+
+      .payment-section {
+        background: var(--banhmi-white);
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 4px 20px rgba(45, 106, 79, 0.12);
+        border: 2px solid var(--banhmi-green-pale);
+      }
+
+      .payment-section h2 {
+        font-size: 1rem;
+        color: var(--banhmi-green);
+        margin: 0 0 20px 0;
+        font-weight: 600;
+      }
+
+      .menu-section {
+        background: var(--banhmi-white);
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 24px;
+        box-shadow: 0 4px 20px rgba(45, 106, 79, 0.12);
+        border: 2px solid var(--banhmi-green-pale);
+      }
+
+      .menu-section h2 {
+        font-size: 1rem;
+        color: var(--banhmi-green);
+        margin: 0 0 20px 0;
+        font-weight: 600;
+      }
+
+      .menu-option {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 16px;
+        margin-bottom: 12px;
+        border: 2px solid var(--banhmi-green-pale);
+        border-radius: 12px;
+        cursor: pointer;
+        transition: border-color 0.2s, background 0.2s;
+      }
+
+      .menu-option:last-child {
+        margin-bottom: 0;
+      }
+
+      .menu-option:hover {
+        background: rgba(149, 213, 178, 0.2);
+      }
+
+      .menu-option.selected {
+        border-color: var(--banhmi-orange);
+        background: rgba(232, 93, 4, 0.08);
+      }
+
+      .menu-option input[type="radio"] {
+        width: 20px;
+        height: 20px;
+        margin: 0;
+        accent-color: var(--banhmi-orange);
+      }
+
+      .menu-option-label {
+        flex: 1;
+        cursor: pointer;
+      }
+
+      .menu-option-name {
+        font-weight: 600;
+        color: var(--banhmi-brown);
+        font-size: 1rem;
+      }
+
+      .menu-option-price {
+        font-weight: 700;
+        color: var(--banhmi-orange);
+        font-size: 1rem;
+        margin-top: 4px;
+      }
+
+      .payment-total {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px;
+        background: rgba(45, 106, 79, 0.08);
+        border-radius: 12px;
+        margin-bottom: 20px;
+        border: 2px solid var(--banhmi-green-pale);
+      }
+
+      .payment-total-label {
+        font-weight: 600;
+        color: var(--banhmi-green);
+        font-size: 1rem;
+      }
+
+      .payment-total-amount {
+        font-weight: 700;
+        color: var(--banhmi-orange);
+        font-size: 1.25rem;
+      }
+
+      .banhmi-page #payment-form {
+        margin: 0;
+        max-width: none;
+      }
+
+      .banhmi-page #card-container {
+        margin-top: 0;
+      }
+
+      .order-info {
+        margin-bottom: 20px;
+      }
+
+      .order-info label {
+        display: block;
+        font-weight: 600;
+        color: var(--banhmi-green);
+        font-size: 0.9rem;
+        margin-bottom: 8px;
+      }
+
+      .order-info label .required {
+        color: var(--banhmi-orange);
+        margin-left: 4px;
+      }
+
+      .order-info input[type="text"],
+      .order-info textarea {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid var(--banhmi-green-pale);
+        border-radius: 12px;
+        font-size: 1rem;
+        font-family: inherit;
+        transition: border-color 0.2s;
+      }
+
+      .order-info input[type="text"]:focus,
+      .order-info textarea:focus {
+        outline: none;
+        border-color: var(--banhmi-orange);
+      }
+
+      .order-info textarea {
+        min-height: 80px;
+        resize: vertical;
+      }
+
+      .order-info .field-optional {
+        color: var(--banhmi-brown);
+        font-weight: 400;
+        font-size: 0.8rem;
+      }
+
+      .banhmi-page #card-button {
+        background: linear-gradient(135deg, var(--banhmi-orange) 0%, var(--banhmi-orange-dark) 100%);
+        margin-top: 20px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        padding: 16px;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(232, 93, 4, 0.35);
+      }
+
+      .banhmi-page #card-button:hover {
+        background: linear-gradient(135deg, var(--banhmi-orange-light) 0%, var(--banhmi-orange) 100%);
+        box-shadow: 0 6px 16px rgba(232, 93, 4, 0.4);
+      }
+
+      .banhmi-page #card-button:active {
+        background: var(--banhmi-orange-dark);
+      }
+
+      .banhmi-page #payment-status-container {
+        margin-top: 20px;
+        border-radius: 12px;
+        border-color: var(--banhmi-green-pale);
+      }
+
+      .banhmi-page #payment-status-container.is-success {
+        background: rgba(45, 106, 79, 0.08);
+      }
+
+      .banhmi-page #payment-status-container.is-failure {
+        background: rgba(232, 93, 4, 0.08);
+      }
+
+      .banhmi-page input:focus {
+        border-color: var(--banhmi-orange);
+      }
+    </style>
+    <script
+      type="text/javascript"
+      src="https://sandbox.web.squarecdn.com/v1/square.js"
+    ></script>
+    <script>
+      const appId = 'sandbox-sq0idb-oKEv1VNR-uF3ECUHWG5WCA';
+      const locationId = 'LSB41KX7QNYRJ';
+
+      // Menu items: { id, name, price, description }
+      const MENU_ITEMS = [
+        { id: 'lemongrass-chicken', name: 'レモングラスチキンバインミー', price: 940, description: '爽やかなハーブの香りとジューシーなチキンが特徴の人気No.1メニュー。' },
+        { id: 'char-siu-pate', name: '自家製チャーシュー＆パテバインミー', price: 1040, description: '濃厚な自家製チャーシューとパテの絶妙なハーモニー。' },
+      ];
+
+      function getSelectedAmount() {
+        const selected = document.querySelector('input[name="menu-item"]:checked');
+        return selected ? parseInt(selected.value, 10) : MENU_ITEMS[0].price;
+      }
+
+      function getSelectedProductName() {
+        const amount = getSelectedAmount();
+        const item = MENU_ITEMS.find((m) => m.price === amount);
+        return item ? item.name : '注文';
+      }
+
+      function updatePaymentDisplay() {
+        const amount = getSelectedAmount();
+        document.getElementById('payment-total-amount').textContent = `¥${amount.toLocaleString()}`;
+        document.getElementById('card-button').textContent = `¥${amount.toLocaleString()} で支払う`;
+        // Update selected state on menu options
+        document.querySelectorAll('.menu-option').forEach((el) => el.classList.remove('selected'));
+        const checkedRadio = document.querySelector('input[name="menu-item"]:checked');
+        if (checkedRadio) checkedRadio.closest('.menu-option').classList.add('selected');
+      }
+
+      async function initializeCard(payments) {
+        const card = await payments.card();
+        await card.attach('#card-container');
+
+        return card;
+      }
+
+      async function createPayment(token, amount, customerName, customerNotes, productName) {
+        const body = JSON.stringify({
+          locationId,
+          sourceId: token,
+          idempotencyKey: window.crypto.randomUUID(),
+          amount,
+          customerName: customerName?.trim() || '',
+          customerNotes: customerNotes?.trim() || '',
+          productName,
+        });
+
+        const paymentResponse = await fetch('/payment', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body,
+        });
+
+        if (paymentResponse.ok) {
+          return paymentResponse.json();
+        }
+
+        const errorBody = await paymentResponse.text();
+        throw new Error(errorBody);
+      }
+
+      // New payment flow
+      async function tokenize(paymentMethod, amount) {
+        const verificationDetails = {
+          amount: String(amount),
+          billingContact: {
+            givenName: 'John',
+            familyName: 'Doe',
+            email: 'john.doe@square.example',
+            phone: '3214563987',
+            addressLines: ['123 Main Street', 'Apartment 1'],
+            city: 'London',
+            state: 'LND',
+            countryCode: 'GB',
+          },
+          currencyCode: 'JPY',
+          intent: 'CHARGE',
+          customerInitiated: true,
+          sellerKeyedIn: false,
+        };
+        const tokenResult = await paymentMethod.tokenize(verificationDetails);
+        if (tokenResult.status === 'OK') {
+          return tokenResult.token;
+        } else {
+          let errorMessage = `Tokenization failed with status: ${tokenResult.status}`;
+          if (tokenResult.errors) {
+            errorMessage += ` and errors: ${JSON.stringify(
+              tokenResult.errors,
+            )}`;
+          }
+
+          throw new Error(errorMessage);
+        }
+      }
+
+      // status is either SUCCESS or FAILURE;
+      function displayPaymentResults(status) {
+        const statusContainer = document.getElementById(
+          'payment-status-container',
+        );
+        if (status === 'SUCCESS') {
+          statusContainer.classList.remove('is-failure');
+          statusContainer.classList.add('is-success');
+        } else {
+          statusContainer.classList.remove('is-success');
+          statusContainer.classList.add('is-failure');
+        }
+
+        statusContainer.style.visibility = 'visible';
+      }
+
+      document.addEventListener('DOMContentLoaded', async function () {
+        if (!window.Square) {
+          throw new Error('Square.js failed to load properly');
+        }
+
+        let payments;
+        try {
+          payments = window.Square.payments(appId, locationId);
+        } catch {
+          const statusContainer = document.getElementById(
+            'payment-status-container',
+          );
+          statusContainer.className = 'missing-credentials';
+          statusContainer.style.visibility = 'visible';
+          return;
+        }
+
+        let card;
+        try {
+          card = await initializeCard(payments);
+        } catch (e) {
+          console.error('Initializing Card failed', e);
+          return;
+        }
+
+        async function handlePaymentMethodSubmission(event, card) {
+          event.preventDefault();
+
+          const customerNameInput = document.getElementById('customer-name');
+          const customerNotesInput = document.getElementById('customer-notes');
+          const customerName = customerNameInput?.value || '';
+          const customerNotes = customerNotesInput?.value || '';
+
+          if (!customerName.trim()) {
+            customerNameInput?.focus();
+            customerNameInput?.reportValidity?.();
+            return;
+          }
+
+          const amount = getSelectedAmount();
+          const productName = getSelectedProductName();
+
+          try {
+            // disable the submit button as we await tokenization and make a payment request.
+            cardButton.disabled = true;
+            const token = await tokenize(card, amount);
+            const paymentResults = await createPayment(token, amount, customerName, customerNotes, productName);
+            displayPaymentResults('SUCCESS');
+
+            console.debug('Payment Success', paymentResults);
+          } catch (e) {
+            cardButton.disabled = false;
+            displayPaymentResults('FAILURE');
+            console.error(e.message);
+          }
+        }
+
+        const cardButton = document.getElementById('card-button');
+        cardButton.addEventListener('click', async function (event) {
+          await handlePaymentMethodSubmission(event, card);
+        });
+
+        // Radio change: update payment total and button text
+        document.querySelectorAll('input[name="menu-item"]').forEach((radio) => {
+          radio.addEventListener('change', updatePaymentDisplay);
+        });
+
+        // Initialize display
+        updatePaymentDisplay();
+      });
+    </script>
+  </head>
+  <body class="banhmi-page">
+    <div class="banhmi-container">
+      <header class="banhmi-header">
+        <h1>TOKYO BANH MI STAND</h1>
+        <p>ベトナムサンドイッチ専門店</p>
+      </header>
+
+      <section class="menu-section">
+        <h2>メニューを選択</h2>
+        <label class="menu-option selected">
+          <input type="radio" name="menu-item" value="940" checked />
+          <span class="menu-option-label">
+            <span class="menu-option-name">レモングラスチキンバインミー</span>
+            <span class="menu-option-price">¥940</span>
+          </span>
+        </label>
+        <label class="menu-option">
+          <input type="radio" name="menu-item" value="1040" />
+          <span class="menu-option-label">
+            <span class="menu-option-name">自家製チャーシュー＆パテバインミー</span>
+            <span class="menu-option-price">¥1,040</span>
+          </span>
+        </label>
+      </section>
+
+      <section class="payment-section">
+        <h2>お支払い情報</h2>
+        <div class="payment-total">
+          <span class="payment-total-label">支払合計金額</span>
+          <span id="payment-total-amount" class="payment-total-amount">¥940</span>
+        </div>
+        <form id="payment-form">
+          <div class="order-info">
+            <label for="customer-name">お名前 <span class="required">（必須）</span></label>
+            <input type="text" id="customer-name" name="customer-name" placeholder="受け取り時の名前" required maxlength="50" />
+          </div>
+          <div class="order-info">
+            <label for="customer-notes">備考 <span class="field-optional">（任意）</span></label>
+            <textarea id="customer-notes" name="customer-notes" placeholder="例：パクチー抜き、辛さ控えめ など"></textarea>
+          </div>
+          <div id="card-container"></div>
+          <button id="card-button" type="button">¥940 で支払う</button>
+        </form>
+        <div id="payment-status-container"></div>
+      </section>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,165 @@
+<!doctype html>
+<html>
+  <head>
+    <link href="/app.css" rel="stylesheet" />
+    <script
+      type="text/javascript"
+      src="https://sandbox.web.squarecdn.com/v1/square.js"
+    ></script>
+    <script>
+      const appId = 'sandbox-sq0idb-oKEv1VNR-uF3ECUHWG5WCA';
+      const locationId = 'LSB41KX7QNYRJ';
+
+      async function initializeACH(payments) {
+        const ach = await payments.ach();
+        // Note: ACH does not have an .attach(...) method
+        // the ACH auth flow is triggered by .tokenize(...)
+        return ach;
+      }
+
+      async function createPayment(token) {
+        const body = JSON.stringify({
+          locationId,
+          sourceId: token,
+          idempotencyKey: window.crypto.randomUUID(),
+        });
+
+        const paymentResponse = await fetch('/payment', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body,
+        });
+
+        if (paymentResponse.ok) {
+          return paymentResponse.json();
+        }
+
+        const errorBody = await paymentResponse.text();
+        throw new Error(errorBody);
+      }
+
+      async function tokenize(paymentMethod, options = {}) {
+        paymentMethod.addEventListener(
+          'ontokenization',
+          async function (event) {
+            const { tokenResult, error } = event.detail;
+            if (error !== undefined) {
+              let errorMessage = `Tokenization failed with error: ${error}`;
+              throw new Error(errorMessage);
+            }
+            if (tokenResult.status === 'OK') {
+              const paymentResults = await createPayment(tokenResult.token);
+              displayPaymentResults('SUCCESS');
+
+              console.debug('Payment Success', paymentResults);
+            } else {
+              let errorMessage = `Tokenization failed with status: ${tokenResult.status}`;
+              if (tokenResult.errors) {
+                errorMessage += ` and errors: ${JSON.stringify(
+                  tokenResult.errors,
+                )}`;
+              }
+              throw new Error(errorMessage);
+            }
+          },
+        );
+        await paymentMethod.tokenize(options);
+      }
+
+      // status is either SUCCESS or FAILURE;
+      function displayPaymentResults(status) {
+        const statusContainer = document.getElementById(
+          'payment-status-container',
+        );
+        if (status === 'SUCCESS') {
+          statusContainer.classList.remove('is-failure');
+          statusContainer.classList.add('is-success');
+        } else {
+          statusContainer.classList.remove('is-success');
+          statusContainer.classList.add('is-failure');
+        }
+
+        statusContainer.style.visibility = 'visible';
+      }
+
+      function getACHOptions(form) {
+        return {
+          intent: 'RECURRING_CHARGE',
+          bankAccountId: '{BANK_ACCOUNT_ID}',
+          startDate: '2028-12-31',
+          frequency: {
+            yearly: {
+              occurrence: 1,
+              months: ['JANUARY'],
+              days: {
+                daysOfMonth: [15, 31],
+              },
+            },
+          },
+          amount: '5.00',
+          currency: 'USD',
+        };
+      }
+
+      document.addEventListener('DOMContentLoaded', async function () {
+        if (!window.Square) {
+          throw new Error('Square.js failed to load properly');
+        }
+
+        let payments;
+        try {
+          payments = window.Square.payments(appId, locationId);
+        } catch {
+          const statusContainer = document.getElementById(
+            'payment-status-container',
+          );
+          statusContainer.className = 'missing-credentials';
+          statusContainer.style.visibility = 'visible';
+          return;
+        }
+
+        let ach;
+        try {
+          ach = await initializeACH(payments);
+        } catch (e) {
+          console.error('Initializing ACH failed', e);
+          return;
+        }
+
+        if (ach) {
+          async function handlePaymentMethodSubmission(
+            event,
+            paymentMethod,
+            options,
+          ) {
+            event.preventDefault();
+
+            try {
+              achButton.disabled = true;
+              await tokenize(paymentMethod, options);
+            } catch (e) {
+              achButton.disabled = false;
+              displayPaymentResults('FAILURE');
+              console.error(e.message);
+            }
+          }
+
+          const achButton = document.getElementById('ach-button');
+          achButton.addEventListener('click', async function (event) {
+            const paymentForm = document.getElementById('payment-form');
+            const achOptions = getACHOptions(paymentForm);
+            await handlePaymentMethodSubmission(event, ach, achOptions);
+          });
+        }
+      });
+    </script>
+  </head>
+  <body>
+    <form id="payment-form">
+      <button id="ach-button" type="button">Pay with Bank Account</button>
+    </form>
+    <div id="payment-status-container"></div>
+  </body>
+</html>
