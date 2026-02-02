@@ -252,6 +252,15 @@
         font-size: 0.8rem;
       }
 
+      .postal-code-note {
+        font-size: 0.8rem;
+        color: var(--banhmi-brown);
+        margin-bottom: 16px;
+        padding: 8px 12px;
+        background: rgba(45, 106, 79, 0.06);
+        border-radius: 8px;
+      }
+
       .banhmi-page #card-button {
         background: linear-gradient(135deg, var(--banhmi-orange) 0%, var(--banhmi-orange-dark) 100%);
         margin-top: 20px;
@@ -520,6 +529,7 @@
             <label for="customer-notes">備考 <span class="field-optional">（任意）</span></label>
             <textarea id="customer-notes" name="customer-notes" placeholder="例：パクチー抜き、辛さ控えめ など"></textarea>
           </div>
+          <p class="postal-code-note">※ カードの郵便番号は日本の形式（例：100-0001）でご入力ください。</p>
           <div id="card-container"></div>
           <button id="card-button" type="button">¥940 で支払う</button>
         </form>

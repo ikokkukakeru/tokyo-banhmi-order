@@ -18,8 +18,10 @@ if (error) {
 // PROTIP: get more insight by running in debug mode: `DEBUG=* npm run dev`
 logger.debug('Parsed configuration:', parsed);
 
-// export secrets stored in .env.production or .env.sandbox (based on .env.example)
+// export secrets: from .env file when present, else from process.env (e.g. Vercel)
 module.exports = {
-  ...parsed,
+  ...(parsed || {}),
+  // Vercel etc.: use process.env when no .env file
+  SQUARE_ACCESS_TOKEN: parsed?.SQUARE_ACCESS_TOKEN ?? process.env.SQUARE_ACCESS_TOKEN,
   isProduction,
 };
