@@ -41,7 +41,7 @@
     "square": "^44.0.0"
   },
   "devDependencies": {
-    "@square/prettier-config": "^1.0.0",
+    "@square/prettier-config": "^2.0.0",
     "ava": "^6.4.1",
     "eslint": "^9.39.2",
     "eslint-plugin-ava": "^15.1.0",
