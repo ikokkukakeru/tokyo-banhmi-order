@@ -47,24 +47,26 @@ module.exports = async function handler(req, res) {
   try {
     await retry(async (bail, attempt) => {
       try {
-        const amount = payload.amount != null ? BigInt(payload.amount) : 940n;
+        // Number for amount: avoids BigInt serialization issues in Vercel serverless
+        const amountNum = payload.amount != null ? Number(payload.amount) : 940;
         const payment = {
           idempotencyKey: payload.idempotencyKey,
           locationId: payload.locationId,
           sourceId: payload.sourceId,
-          amountMoney: { amount, currency: 'JPY' },
+          amountMoney: { amount: amountNum, currency: 'JPY' },
         };
 
         if (payload.customerId) payment.customerId = payload.customerId;
         if (payload.verificationToken) payment.verificationToken = payload.verificationToken;
 
         if (payload.customerName || payload.productName) {
-          const productName = payload.productName || '注文';
-          const customerName = payload.customerName || '（未入力）';
-          const customerNotes = payload.customerNotes ? payload.customerNotes.trim() : '';
-          payment.note = customerNotes
+          const productName = (payload.productName || '注文').slice(0, 200);
+          const customerName = (payload.customerName || '（未入力）').slice(0, 100);
+          const customerNotes = (payload.customerNotes || '').trim().slice(0, 200);
+          const note = customerNotes
             ? `${productName} / ${customerName} / ${customerNotes}`
             : `${productName} / ${customerName}`;
+          payment.note = note.slice(0, 500);
         }
 
         const { payment: paymentResponse } = await square.payments.create(payment);
@@ -87,8 +89,10 @@ module.exports = async function handler(req, res) {
       }
     });
   } catch (ex) {
-    if (ex instanceof SquareError && ex.errors) {
-      res.status(400).json({ errors: ex.errors });
+    if (ex instanceof SquareError) {
+      const status = ex.statusCode || 400;
+      const body = ex.errors ? { errors: ex.errors } : { error: ex.message || 'Payment failed' };
+      res.status(status).json(body);
     } else {
       res.status(500).json({ error: 'Internal Server Error' });
     }
