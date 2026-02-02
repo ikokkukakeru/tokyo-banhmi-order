@@ -1,4 +1,10 @@
 // Vercel Serverless Function: POST /api/card
+
+// BigInt を JSON にシリアライズするため（Square SDK のレスポンス対策）
+BigInt.prototype.toJSON = function () {
+  return this.toString();
+};
+
 const retry = require('async-retry');
 const { validateCreateCardPayload } = require('../server/schema');
 const { SquareError, client: square } = require('../server/square');
@@ -10,6 +16,14 @@ function readBody(req) {
     req.on('end', () => resolve(body));
     req.on('error', reject);
   });
+}
+
+async function getParsedBody(req) {
+  if (req.body && typeof req.body === 'object' && !Buffer.isBuffer(req.body)) {
+    return req.body;
+  }
+  const raw = await readBody(req);
+  return JSON.parse(raw || '{}');
 }
 
 module.exports = async function handler(req, res) {
@@ -30,12 +44,13 @@ module.exports = async function handler(req, res) {
 
   let payload;
   try {
-    const raw = await readBody(req);
-    payload = JSON.parse(raw);
+    payload = await getParsedBody(req);
   } catch {
     res.status(400).json({ error: 'Bad Request' });
     return;
   }
+
+  console.log('Body:', payload);
 
   if (!validateCreateCardPayload(payload)) {
     res.status(400).json({ error: 'Bad Request' });
