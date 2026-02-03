@@ -3,7 +3,12 @@
 
 const retry = require('async-retry');
 const { validatePaymentPayload } = require('../server/schema');
-const { SQUARE_ACCESS_TOKEN, isProduction } = require('../server/config');
+const config = require('../server/config');
+
+// Vercel では process.env を直接参照（config は .env ファイル前提のため）
+const SQUARE_ACCESS_TOKEN =
+  process.env.SQUARE_ACCESS_TOKEN || config.SQUARE_ACCESS_TOKEN;
+const isProduction = process.env.NODE_ENV === 'production';
 
 const SQUARE_BASE = isProduction
   ? 'https://connect.squareup.com'
@@ -58,7 +63,11 @@ module.exports = async function handler(req, res) {
   }
 
   if (!SQUARE_ACCESS_TOKEN) {
-    res.status(500).json({ error: 'SQUARE_ACCESS_TOKEN not configured' });
+    console.error('SQUARE_ACCESS_TOKEN is not set. Set it in Vercel: Project → Settings → Environment Variables.');
+    res.status(500).json({
+      error: 'SQUARE_ACCESS_TOKEN not configured',
+      hint: 'Vercel の Project → Settings → Environment Variables で SQUARE_ACCESS_TOKEN を設定し、再デプロイしてください。',
+    });
     return;
   }
 
