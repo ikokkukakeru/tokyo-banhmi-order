@@ -91,10 +91,19 @@ module.exports = async function handler(req, res) {
     payment.note = note.slice(0, 500);
   }
 
+  const SQUARE_REQUEST_TIMEOUT_MS = 20000;
+
   try {
     await retry(async (bail, attempt) => {
       try {
-        const { payment: paymentResponse } = await square.payments.create(payment);
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('SQUARE_TIMEOUT')), SQUARE_REQUEST_TIMEOUT_MS);
+        });
+        const createPromise = square.payments.create(payment);
+        const { payment: paymentResponse } = await Promise.race([
+          createPromise,
+          timeoutPromise,
+        ]);
 
         res.status(200).json({
           success: true,
@@ -107,7 +116,11 @@ module.exports = async function handler(req, res) {
         });
       } catch (ex) {
         if (ex instanceof SquareError) bail(ex);
-        else throw ex;
+        if (ex && ex.message === 'SQUARE_TIMEOUT') {
+          bail(Object.assign(new Error('Payment request timed out'), { statusCode: 504 }));
+        } else {
+          throw ex;
+        }
       }
     });
   } catch (ex) {
@@ -115,6 +128,10 @@ module.exports = async function handler(req, res) {
       const status = ex.statusCode || 400;
       const body = ex.errors ? { errors: ex.errors } : { error: ex.message || 'Payment failed' };
       res.status(status).json(body);
+    } else if (ex && ex.statusCode === 504) {
+      res.status(504).json({
+        error: '通信がタイムアウトしました。しばらくして再度お試しください。',
+      });
     } else {
       res.status(500).json({ error: 'Internal Server Error' });
     }
