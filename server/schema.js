@@ -11,6 +11,7 @@ const paymentSchema = {
   },
   optionalProperties: {
     amount: { type: 'uint32' },
+    catalog_object_id: { type: 'string' },
     customerId: { type: 'string' },
     verificationToken: { type: 'string' },
     customerName: { type: 'string' },

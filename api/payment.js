@@ -80,6 +80,7 @@ module.exports = async function handler(req, res) {
 
   const amount_num = payload.amount != null ? Number(payload.amount) : 940;
   const location_id = process.env.LOCATION_ID || payload.locationId;
+  const catalog_object_id = payload.catalog_object_id ? String(payload.catalog_object_id).trim() : null;
   const product_name = (payload.productName || 'レモングラスチキンバインミー').slice(0, 200);
 
   const controller = new AbortController();
@@ -92,19 +93,16 @@ module.exports = async function handler(req, res) {
   };
 
   try {
-    // 1. 注文の作成 POST /v2/orders
+    // 1. 注文の作成 POST /v2/orders（Catalog のバリエーションIDを指定）
     const order_idempotency_key = crypto.randomUUID();
+    const order_line_items = catalog_object_id
+      ? [{ catalog_object_id, quantity: '1' }]
+      : [{ name: product_name, quantity: '1', base_price_money: { amount: amount_num, currency: 'JPY' } }];
     const order_body = {
       idempotency_key: order_idempotency_key,
       order: {
         location_id,
-        line_items: [
-          {
-            name: product_name,
-            quantity: '1',
-            base_price_money: { amount: amount_num, currency: 'JPY' },
-          },
-        ],
+        line_items: order_line_items,
       },
     };
 

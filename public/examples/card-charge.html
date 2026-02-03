@@ -145,6 +145,17 @@
         background: rgba(149, 213, 178, 0.2);
       }
 
+      .banhmi-page .menu-loading,
+      .banhmi-page .menu-error {
+        color: var(--banhmi-brown);
+        margin: 0;
+        padding: 16px 0;
+      }
+
+      .banhmi-page .menu-error {
+        color: var(--banhmi-orange-dark);
+      }
+
       .menu-option.selected {
         border-color: var(--banhmi-orange);
         background: rgba(232, 93, 4, 0.08);
@@ -345,31 +356,107 @@
       const appId = 'sandbox-sq0idb-oKEv1VNR-uF3ECUHWG5WCA';
       const locationId = 'LSB41KX7QNYRJ';
 
-      // Menu items: { id, name, price, description }
-      const MENU_ITEMS = [
-        { id: 'lemongrass-chicken', name: 'レモングラスチキンバインミー', price: 940, description: '爽やかなハーブの香りとジューシーなチキンが特徴の人気No.1メニュー。' },
-        { id: 'char-siu-pate', name: '自家製チャーシュー＆パテバインミー', price: 1040, description: '濃厚な自家製チャーシューとパテの絶妙なハーモニー。' },
-      ];
+      // サーバーから取得したメニュー項目 { variationId, name, amount }
+      let menuItems = [];
 
       function getSelectedAmount() {
         const selected = document.querySelector('input[name="menu-item"]:checked');
-        return selected ? parseInt(selected.value, 10) : MENU_ITEMS[0].price;
+        return selected ? parseInt(selected.value, 10) : (menuItems[0]?.amount ?? 940);
       }
 
       function getSelectedProductName() {
-        const amount = getSelectedAmount();
-        const item = MENU_ITEMS.find((m) => m.price === amount);
-        return item ? item.name : '注文';
+        const selected = document.querySelector('input[name="menu-item"]:checked');
+        if (!selected) return menuItems[0]?.name ?? '注文';
+        const label = selected.closest('.menu-option');
+        const nameEl = label?.querySelector('.menu-option-name');
+        return nameEl ? nameEl.textContent : '注文';
+      }
+
+      function getSelectedVariationId() {
+        const selected = document.querySelector('input[name="menu-item"]:checked');
+        return selected?.dataset?.variationId ?? '';
       }
 
       function updatePaymentDisplay() {
         const amount = getSelectedAmount();
-        document.getElementById('payment-total-amount').textContent = `¥${amount.toLocaleString()}`;
-        document.getElementById('card-button').textContent = `¥${amount.toLocaleString()} で支払う`;
-        // Update selected state on menu options
+        const totalEl = document.getElementById('payment-total-amount');
+        const btnEl = document.getElementById('card-button');
+        if (totalEl) totalEl.textContent = `¥${amount.toLocaleString()}`;
+        if (btnEl) btnEl.textContent = `¥${amount.toLocaleString()} で支払う`;
         document.querySelectorAll('.menu-option').forEach((el) => el.classList.remove('selected'));
         const checkedRadio = document.querySelector('input[name="menu-item"]:checked');
         if (checkedRadio) checkedRadio.closest('.menu-option').classList.add('selected');
+      }
+
+      function buildMenuItemsFromCatalog(objects) {
+        const items = [];
+        if (!Array.isArray(objects)) return items;
+        for (const obj of objects) {
+          if (obj.type !== 'ITEM' || !obj.item_data) continue;
+          const variations = obj.item_data.variations;
+          if (!variations || variations.length === 0) continue;
+          const v0 = variations[0];
+          const variationId = v0.id;
+          const priceMoney = v0.item_variation_data?.price_money;
+          const amount = priceMoney != null ? Number(priceMoney.amount) || 0 : 0;
+          const name = (obj.item_data.name || '商品').trim();
+          items.push({ variationId, name, amount });
+        }
+        return items;
+      }
+
+      function renderMenuList(items) {
+        const container = document.getElementById('menu-list');
+        if (!container) return;
+        container.innerHTML = '';
+        if (items.length === 0) {
+          container.innerHTML = '<p class="menu-error">メニューを読み込めませんでした。</p>';
+          return;
+        }
+        menuItems = items;
+        items.forEach((item, index) => {
+          const label = document.createElement('label');
+          label.className = 'menu-option' + (index === 0 ? ' selected' : '');
+          const radio = document.createElement('input');
+          radio.type = 'radio';
+          radio.name = 'menu-item';
+          radio.value = String(item.amount);
+          radio.dataset.variationId = item.variationId;
+          if (index === 0) radio.checked = true;
+          const wrap = document.createElement('span');
+          wrap.className = 'menu-option-label';
+          wrap.innerHTML = `<span class="menu-option-name">${escapeHtml(item.name)}</span><span class="menu-option-price">¥${item.amount.toLocaleString()}</span>`;
+          label.appendChild(radio);
+          label.appendChild(wrap);
+          container.appendChild(label);
+        });
+        document.querySelectorAll('input[name="menu-item"]').forEach((radio) => {
+          radio.addEventListener('change', updatePaymentDisplay);
+        });
+        updatePaymentDisplay();
+      }
+
+      function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+      }
+
+      async function loadAndRenderMenu() {
+        const container = document.getElementById('menu-list');
+        try {
+          const res = await fetch('/api/items');
+          const data = await res.json();
+          if (!res.ok) throw new Error(data?.errors?.[0]?.detail || data?.error || 'Failed to load menu');
+          const items = buildMenuItemsFromCatalog(data.objects || []);
+          renderMenuList(items);
+        } catch (e) {
+          if (container) {
+            container.innerHTML = '<p class="menu-error">メニューを読み込めませんでした。</p>';
+          }
+          console.error('Load menu error:', e);
+          menuItems = [];
+        }
       }
 
       async function initializeCard(payments) {
@@ -381,8 +468,8 @@
 
       const PAYMENT_REQUEST_TIMEOUT_MS = 25000;
 
-      async function createPayment(token, amount, customerName, customerNotes, productName) {
-        const body = JSON.stringify({
+      async function createPayment(token, amount, customerName, customerNotes, productName, catalogObjectId) {
+        const payload = {
           locationId,
           sourceId: token,
           idempotencyKey: window.crypto.randomUUID(),
@@ -390,7 +477,9 @@
           customerName: customerName?.trim() || '',
           customerNotes: customerNotes?.trim() || '',
           productName,
-        });
+        };
+        if (catalogObjectId) payload.catalog_object_id = catalogObjectId;
+        const body = JSON.stringify(payload);
 
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), PAYMENT_REQUEST_TIMEOUT_MS);
@@ -480,6 +569,8 @@
       }
 
       document.addEventListener('DOMContentLoaded', async function () {
+        await loadAndRenderMenu();
+
         if (!window.Square) {
           throw new Error('Square.js failed to load properly');
         }
@@ -526,7 +617,8 @@
             cardButton.disabled = true;
             cardButton.textContent = '処理中...';
             const token = await tokenize(card, amount);
-            const paymentResults = await createPayment(token, amount, customerName, customerNotes, productName);
+            const catalogObjectId = getSelectedVariationId();
+            const paymentResults = await createPayment(token, amount, customerName, customerNotes, productName, catalogObjectId);
             const orderId = paymentResults?.payment?.orderId || '';
             document.getElementById('payment-form').style.display = 'none';
             document.getElementById('payment-status-container').style.display = 'none';
@@ -551,12 +643,6 @@
           await handlePaymentMethodSubmission(event, card);
         });
 
-        // Radio change: update payment total and button text
-        document.querySelectorAll('input[name="menu-item"]').forEach((radio) => {
-          radio.addEventListener('change', updatePaymentDisplay);
-        });
-
-        // Initialize display
         updatePaymentDisplay();
       });
     </script>
@@ -570,20 +656,9 @@
 
       <section class="menu-section">
         <h2>メニューを選択</h2>
-        <label class="menu-option selected">
-          <input type="radio" name="menu-item" value="940" checked />
-          <span class="menu-option-label">
-            <span class="menu-option-name">レモングラスチキンバインミー</span>
-            <span class="menu-option-price">¥940</span>
-          </span>
-        </label>
-        <label class="menu-option">
-          <input type="radio" name="menu-item" value="1040" />
-          <span class="menu-option-label">
-            <span class="menu-option-name">自家製チャーシュー＆パテバインミー</span>
-            <span class="menu-option-price">¥1,040</span>
-          </span>
-        </label>
+        <div id="menu-list">
+          <p class="menu-loading">メニューを読み込み中...</p>
+        </div>
       </section>
 
       <section class="payment-section">
