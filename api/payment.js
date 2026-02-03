@@ -1,17 +1,23 @@
 // Vercel Serverless Function: POST /api/payment
-// Square SDK を使用（config の SQUARE_ENVIRONMENT で Sandbox を指定可能）
+// Square REST API を直接 fetch で呼び出し（サーバーレスで SDK がハングする問題を回避）
 
 BigInt.prototype.toJSON = function () {
   return this.toString();
 };
 
-const retry = require('async-retry');
 const { validatePaymentPayload } = require('../server/schema');
-const { SquareError, client: square } = require('../server/square');
 const config = require('../server/config');
 
 const SQUARE_ACCESS_TOKEN =
   process.env.SQUARE_ACCESS_TOKEN || config.SQUARE_ACCESS_TOKEN;
+
+const SQUARE_BASE_URL =
+  process.env.SQUARE_ENVIRONMENT === 'sandbox'
+    ? 'https://connect.squareupsandbox.com'
+    : 'https://connect.squareup.com';
+
+const SQUARE_API_VERSION = '2024-11-20';
+const SQUARE_REQUEST_TIMEOUT_MS = 20000;
 
 function readBody(req) {
   return new Promise((resolve, reject) => {
@@ -71,15 +77,15 @@ module.exports = async function handler(req, res) {
   }
 
   const amountNum = payload.amount != null ? Number(payload.amount) : 940;
-  const payment = {
-    idempotencyKey: payload.idempotencyKey,
-    locationId: payload.locationId,
-    sourceId: payload.sourceId,
-    amountMoney: { amount: amountNum, currency: 'JPY' },
+  const body = {
+    idempotency_key: payload.idempotencyKey,
+    location_id: payload.locationId,
+    source_id: payload.sourceId,
+    amount_money: { amount: amountNum, currency: 'JPY' },
   };
 
-  if (payload.customerId) payment.customerId = payload.customerId;
-  if (payload.verificationToken) payment.verificationToken = payload.verificationToken;
+  if (payload.customerId) body.customer_id = payload.customerId;
+  if (payload.verificationToken) body.verification_token = payload.verificationToken;
 
   if (payload.customerName || payload.productName) {
     const productName = (payload.productName || '注文').slice(0, 200);
@@ -88,52 +94,53 @@ module.exports = async function handler(req, res) {
     const note = customerNotes
       ? `${productName} / ${customerName} / ${customerNotes}`
       : `${productName} / ${customerName}`;
-    payment.note = note.slice(0, 500);
+    body.note = note.slice(0, 500);
   }
 
-  const SQUARE_REQUEST_TIMEOUT_MS = 20000;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), SQUARE_REQUEST_TIMEOUT_MS);
 
   try {
-    await retry(async (bail, attempt) => {
-      try {
-        const timeoutPromise = new Promise((_, reject) => {
-          setTimeout(() => reject(new Error('SQUARE_TIMEOUT')), SQUARE_REQUEST_TIMEOUT_MS);
-        });
-        const createPromise = square.payments.create(payment);
-        const { payment: paymentResponse } = await Promise.race([
-          createPromise,
-          timeoutPromise,
-        ]);
+    const squareRes = await fetch(`${SQUARE_BASE_URL}/v2/payments`, {
+      method: 'POST',
+      headers: {
+        'Square-Version': SQUARE_API_VERSION,
+        Authorization: `Bearer ${SQUARE_ACCESS_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
 
-        res.status(200).json({
-          success: true,
-          payment: {
-            id: paymentResponse.id,
-            status: paymentResponse.status,
-            receiptUrl: paymentResponse.receiptUrl,
-            orderId: paymentResponse.orderId,
-          },
-        });
-      } catch (ex) {
-        if (ex instanceof SquareError) bail(ex);
-        if (ex && ex.message === 'SQUARE_TIMEOUT') {
-          bail(Object.assign(new Error('Payment request timed out'), { statusCode: 504 }));
-        } else {
-          throw ex;
-        }
-      }
+    const data = await squareRes.json();
+
+    if (!squareRes.ok) {
+      const status = squareRes.status;
+      const errBody = data.errors ? { errors: data.errors } : { error: data.message || 'Payment failed' };
+      res.status(status).json(errBody);
+      return;
+    }
+
+    const paymentResponse = data.payment;
+    res.status(200).json({
+      success: true,
+      payment: {
+        id: paymentResponse.id,
+        status: paymentResponse.status,
+        receiptUrl: paymentResponse.receipt_url,
+        orderId: paymentResponse.order_id,
+      },
     });
   } catch (ex) {
-    if (ex instanceof SquareError) {
-      const status = ex.statusCode || 400;
-      const body = ex.errors ? { errors: ex.errors } : { error: ex.message || 'Payment failed' };
-      res.status(status).json(body);
-    } else if (ex && ex.statusCode === 504) {
+    clearTimeout(timeoutId);
+    if (ex.name === 'AbortError') {
       res.status(504).json({
         error: '通信がタイムアウトしました。しばらくして再度お試しください。',
       });
-    } else {
-      res.status(500).json({ error: 'Internal Server Error' });
+      return;
     }
+    console.error('Square API error:', ex);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 };
