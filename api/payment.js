@@ -8,11 +8,15 @@ const config = require('../server/config');
 // Vercel では process.env を直接参照（config は .env ファイル前提のため）
 const SQUARE_ACCESS_TOKEN =
   process.env.SQUARE_ACCESS_TOKEN || config.SQUARE_ACCESS_TOKEN;
-const isProduction = process.env.NODE_ENV === 'production';
 
-const SQUARE_BASE = isProduction
-  ? 'https://connect.squareup.com'
-  : 'https://connect.squareupsandbox.com';
+// Vercel では NODE_ENV=production になるため、Sandbox を使う場合は明示する
+const useSandbox =
+  process.env.SQUARE_ENVIRONMENT === 'sandbox' ||
+  (process.env.NODE_ENV !== 'production' && process.env.SQUARE_ENVIRONMENT !== 'production');
+
+const SQUARE_BASE = useSandbox
+  ? 'https://connect.squareupsandbox.com'
+  : 'https://connect.squareup.com';
 
 function readBody(req) {
   return new Promise((resolve, reject) => {
