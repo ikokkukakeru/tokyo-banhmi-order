@@ -1,15 +1,13 @@
 // Vercel Serverless Function: POST /api/payment
-
-// BigInt を JSON にシリアライズするため（Square SDK のレスポンス対策）
-BigInt.prototype.toJSON = function () {
-  return this.toString();
-};
+// Square SDK を使わず API 直接呼び出しで V1_ERROR を回避
 
 const retry = require('async-retry');
-const {
-  validatePaymentPayload,
-} = require('../server/schema');
-const { SquareError, client: square } = require('../server/square');
+const { validatePaymentPayload } = require('../server/schema');
+const { SQUARE_ACCESS_TOKEN, isProduction } = require('../server/config');
+
+const SQUARE_BASE = isProduction
+  ? 'https://connect.squareup.com'
+  : 'https://connect.squareupsandbox.com';
 
 function readBody(req) {
   return new Promise((resolve, reject) => {
@@ -59,57 +57,68 @@ module.exports = async function handler(req, res) {
     return;
   }
 
+  if (!SQUARE_ACCESS_TOKEN) {
+    res.status(500).json({ error: 'SQUARE_ACCESS_TOKEN not configured' });
+    return;
+  }
+
+  const amountNum = payload.amount != null ? Number(payload.amount) : 940;
+  const squareBody = {
+    source_id: payload.sourceId,
+    idempotency_key: payload.idempotencyKey,
+    location_id: payload.locationId,
+    amount_money: { amount: amountNum, currency: 'JPY' },
+  };
+
+  if (payload.customerId) squareBody.customer_id = payload.customerId;
+  if (payload.verificationToken) squareBody.verification_token = payload.verificationToken;
+
+  if (payload.customerName || payload.productName) {
+    const productName = (payload.productName || '注文').slice(0, 200);
+    const customerName = (payload.customerName || '（未入力）').slice(0, 100);
+    const customerNotes = (payload.customerNotes || '').trim().slice(0, 200);
+    const note = customerNotes
+      ? `${productName} / ${customerName} / ${customerNotes}`
+      : `${productName} / ${customerName}`;
+    squareBody.note = note.slice(0, 500);
+  }
+
   try {
     await retry(async (bail, attempt) => {
-      try {
-        // Number for amount: avoids BigInt serialization issues in Vercel serverless
-        const amountNum = payload.amount != null ? Number(payload.amount) : 940;
-        const payment = {
-          idempotencyKey: payload.idempotencyKey,
-          locationId: payload.locationId,
-          sourceId: payload.sourceId,
-          amountMoney: { amount: amountNum, currency: 'JPY' },
-        };
+      const response = await fetch(`${SQUARE_BASE}/v2/payments`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${SQUARE_ACCESS_TOKEN}`,
+        },
+        body: JSON.stringify(squareBody),
+      });
 
-        if (payload.customerId) payment.customerId = payload.customerId;
-        if (payload.verificationToken) payment.verificationToken = payload.verificationToken;
+      const data = await response.json();
 
-        if (payload.customerName || payload.productName) {
-          const productName = (payload.productName || '注文').slice(0, 200);
-          const customerName = (payload.customerName || '（未入力）').slice(0, 100);
-          const customerNotes = (payload.customerNotes || '').trim().slice(0, 200);
-          const note = customerNotes
-            ? `${productName} / ${customerName} / ${customerNotes}`
-            : `${productName} / ${customerName}`;
-          payment.note = note.slice(0, 500);
-        }
-
-        const { payment: paymentResponse } = await square.payments.create(payment);
-
-        res.status(200).json({
-          success: true,
-          payment: {
-            id: paymentResponse.id,
-            status: paymentResponse.status,
-            receiptUrl: paymentResponse.receiptUrl,
-            orderId: paymentResponse.orderId,
-          },
-        });
-      } catch (ex) {
-        if (ex instanceof SquareError) {
-          bail(ex);
-        } else {
-          throw ex;
-        }
+      if (!response.ok) {
+        console.error('Square API error:', response.status, data);
+        const err = new Error(data.message || 'Payment failed');
+        err.statusCode = response.status;
+        err.errors = data.errors;
+        bail(err);
+        return;
       }
+
+      const payment = data.payment;
+      res.status(200).json({
+        success: true,
+        payment: {
+          id: payment.id,
+          status: payment.status,
+          receiptUrl: payment.receipt_url,
+          orderId: payment.order_id,
+        },
+      });
     });
   } catch (ex) {
-    if (ex instanceof SquareError) {
-      const status = ex.statusCode || 400;
-      const body = ex.errors ? { errors: ex.errors } : { error: ex.message || 'Payment failed' };
-      res.status(status).json(body);
-    } else {
-      res.status(500).json({ error: 'Internal Server Error' });
-    }
+    const status = ex.statusCode || 400;
+    const body = ex.errors ? { errors: ex.errors } : { error: ex.message || 'Payment failed' };
+    res.status(status).json(body);
   }
 };
