@@ -301,6 +301,38 @@
         content: none;
       }
 
+      .banhmi-page #success-view {
+        display: none;
+        background: var(--banhmi-white);
+        border-radius: 16px;
+        padding: 32px 24px;
+        margin-top: 20px;
+        box-shadow: 0 4px 20px rgba(45, 106, 79, 0.12);
+        border: 2px solid var(--banhmi-green-pale);
+        text-align: center;
+      }
+
+      .banhmi-page #success-view .success-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--banhmi-green);
+        margin: 0 0 20px 0;
+      }
+
+      .banhmi-page #success-view .success-order-id {
+        font-size: 0.95rem;
+        color: var(--banhmi-brown);
+        margin: 0 0 16px 0;
+        word-break: break-all;
+      }
+
+      .banhmi-page #success-view .success-note {
+        font-size: 0.9rem;
+        color: var(--banhmi-brown);
+        margin: 0;
+        opacity: 0.9;
+      }
+
       .banhmi-page input:focus {
         border-color: var(--banhmi-orange);
       }
@@ -495,7 +527,12 @@
             cardButton.textContent = '処理中...';
             const token = await tokenize(card, amount);
             const paymentResults = await createPayment(token, amount, customerName, customerNotes, productName);
-            displayPaymentResults('SUCCESS');
+            const orderId = paymentResults?.payment?.orderId || '';
+            document.getElementById('payment-form').style.display = 'none';
+            document.getElementById('payment-status-container').style.display = 'none';
+            const successOrderIdEl = document.getElementById('success-order-id');
+            if (successOrderIdEl) successOrderIdEl.textContent = orderId;
+            document.getElementById('success-view').style.display = 'block';
             console.debug('Payment Success', paymentResults);
           } catch (e) {
             cardButton.disabled = false;
@@ -569,6 +606,11 @@
           <button id="card-button" type="button">¥940 で支払う</button>
         </form>
         <div id="payment-status-container"></div>
+        <div id="success-view">
+          <p class="success-title">ご注文ありがとうございます！</p>
+          <p class="success-order-id">注文ID: <span id="success-order-id"></span></p>
+          <p class="success-note">カウンターでお待ちください</p>
+        </div>
       </section>
     </div>
   </body>
