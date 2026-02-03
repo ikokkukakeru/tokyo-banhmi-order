@@ -19,6 +19,8 @@ const SQUARE_BASE_URL =
 const SQUARE_API_VERSION = '2024-11-20';
 const SQUARE_REQUEST_TIMEOUT_MS = 20000;
 
+const crypto = require('crypto');
+
 function readBody(req) {
   return new Promise((resolve, reject) => {
     let body = '';
@@ -76,60 +78,103 @@ module.exports = async function handler(req, res) {
     return;
   }
 
-  const amountNum = payload.amount != null ? Number(payload.amount) : 940;
-  const body = {
-    idempotency_key: payload.idempotencyKey,
-    location_id: payload.locationId,
-    source_id: payload.sourceId,
-    amount_money: { amount: amountNum, currency: 'JPY' },
-  };
-
-  if (payload.customerId) body.customer_id = payload.customerId;
-  if (payload.verificationToken) body.verification_token = payload.verificationToken;
-
-  if (payload.customerName || payload.productName) {
-    const productName = (payload.productName || '注文').slice(0, 200);
-    const customerName = (payload.customerName || '（未入力）').slice(0, 100);
-    const customerNotes = (payload.customerNotes || '').trim().slice(0, 200);
-    const note = customerNotes
-      ? `${productName} / ${customerName} / ${customerNotes}`
-      : `${productName} / ${customerName}`;
-    body.note = note.slice(0, 500);
-  }
+  const amount_num = payload.amount != null ? Number(payload.amount) : 940;
+  const location_id = process.env.LOCATION_ID || payload.locationId;
+  const product_name = (payload.productName || 'レモングラスチキンバインミー').slice(0, 200);
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), SQUARE_REQUEST_TIMEOUT_MS);
 
+  const square_headers = {
+    'Square-Version': SQUARE_API_VERSION,
+    Authorization: `Bearer ${SQUARE_ACCESS_TOKEN}`,
+    'Content-Type': 'application/json',
+  };
+
   try {
-    const squareRes = await fetch(`${SQUARE_BASE_URL}/v2/payments`, {
-      method: 'POST',
-      headers: {
-        'Square-Version': SQUARE_API_VERSION,
-        Authorization: `Bearer ${SQUARE_ACCESS_TOKEN}`,
-        'Content-Type': 'application/json',
+    // 1. 注文の作成 POST /v2/orders
+    const order_idempotency_key = crypto.randomUUID();
+    const order_body = {
+      idempotency_key: order_idempotency_key,
+      order: {
+        location_id,
+        line_items: [
+          {
+            name: product_name,
+            quantity: '1',
+            base_price_money: { amount: amount_num, currency: 'JPY' },
+          },
+        ],
       },
-      body: JSON.stringify(body),
+    };
+
+    const order_res = await fetch(`${SQUARE_BASE_URL}/v2/orders`, {
+      method: 'POST',
+      headers: square_headers,
+      body: JSON.stringify(order_body),
+      signal: controller.signal,
+    });
+    const order_data = await order_res.json();
+
+    if (!order_res.ok) {
+      clearTimeout(timeoutId);
+      const err_body = order_data.errors ? { errors: order_data.errors } : { error: order_data.message || 'Order creation failed' };
+      res.status(order_res.status).json(err_body);
+      return;
+    }
+
+    const order_id = order_data.order?.id;
+    if (!order_id) {
+      clearTimeout(timeoutId);
+      res.status(500).json({ error: 'Order created but no order id in response' });
+      return;
+    }
+
+    // 2. 支払いの作成 POST /v2/payments（order_id を付与）
+    const payment_body = {
+      idempotency_key: payload.idempotencyKey,
+      location_id: payload.locationId,
+      source_id: payload.sourceId,
+      amount_money: { amount: amount_num, currency: 'JPY' },
+      order_id,
+    };
+
+    if (payload.customerId) payment_body.customer_id = payload.customerId;
+    if (payload.verificationToken) payment_body.verification_token = payload.verificationToken;
+
+    if (payload.customerName || payload.productName) {
+      const customer_name = (payload.customerName || '（未入力）').slice(0, 100);
+      const customer_notes = (payload.customerNotes || '').trim().slice(0, 200);
+      const note = customer_notes
+        ? `${product_name} / ${customer_name} / ${customer_notes}`
+        : `${product_name} / ${customer_name}`;
+      payment_body.note = note.slice(0, 500);
+    }
+
+    const payment_res = await fetch(`${SQUARE_BASE_URL}/v2/payments`, {
+      method: 'POST',
+      headers: square_headers,
+      body: JSON.stringify(payment_body),
       signal: controller.signal,
     });
     clearTimeout(timeoutId);
 
-    const data = await squareRes.json();
+    const payment_data = await payment_res.json();
 
-    if (!squareRes.ok) {
-      const status = squareRes.status;
-      const errBody = data.errors ? { errors: data.errors } : { error: data.message || 'Payment failed' };
-      res.status(status).json(errBody);
+    if (!payment_res.ok) {
+      const err_body = payment_data.errors ? { errors: payment_data.errors } : { error: payment_data.message || 'Payment failed' };
+      res.status(payment_res.status).json(err_body);
       return;
     }
 
-    const paymentResponse = data.payment;
+    const payment_response = payment_data.payment;
     res.status(200).json({
       success: true,
       payment: {
-        id: paymentResponse.id,
-        status: paymentResponse.status,
-        receiptUrl: paymentResponse.receipt_url,
-        orderId: paymentResponse.order_id,
+        id: payment_response.id,
+        status: payment_response.status,
+        receiptUrl: payment_response.receipt_url,
+        orderId: payment_response.order_id,
       },
     });
   } catch (ex) {
