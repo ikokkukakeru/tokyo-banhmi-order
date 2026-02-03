@@ -2,8 +2,10 @@ const { config } = require('dotenv');
 
 const logger = require('./logger');
 
-// package.json sets NODE_ENV in its scripts
-const isProduction = process.env.NODE_ENV === 'production';
+// Vercel では NODE_ENV=production になるため、SQUARE_ENVIRONMENT で Sandbox を明示可能
+const isProduction =
+  process.env.NODE_ENV === 'production' &&
+  process.env.SQUARE_ENVIRONMENT !== 'sandbox';
 
 // load configuration based on environment
 const { error, parsed } = config({
