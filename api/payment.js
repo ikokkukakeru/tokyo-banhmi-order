@@ -148,7 +148,7 @@ module.exports = async function handler(req, res) {
               recipient: {
                 display_name: pickup_display_name,
               },
-              pickup_at: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+              pickup_at: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
             },
           },
         ],
