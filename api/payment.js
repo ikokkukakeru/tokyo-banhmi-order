@@ -1,5 +1,6 @@
 // Vercel Serverless Function: POST /api/payment
-// Square REST API を直接 fetch で呼び出し（サーバーレスで SDK がハングする問題を回避）
+// 【注文作成 → 決済】の2段階フローで、Order と Payment を紐付け KDS/POS に表示させる
+// Square REST API を直接 fetch で呼び出し（SDK はサーバーレスでハングするため未使用）
 
 BigInt.prototype.toJSON = function () {
   return this.toString();
@@ -81,7 +82,7 @@ module.exports = async function handler(req, res) {
   const amount_num = payload.amount != null ? Number(payload.amount) : 940;
   const location_id = process.env.LOCATION_ID || payload.locationId;
   const catalog_object_id = payload.catalog_object_id ? String(payload.catalog_object_id).trim() : null;
-  const product_name = (payload.productName || 'レモングラスチキンバインミー').slice(0, 200);
+  const product_name = (payload.productName || 'バインミー').slice(0, 200);
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), SQUARE_REQUEST_TIMEOUT_MS);
@@ -93,11 +94,27 @@ module.exports = async function handler(req, res) {
   };
 
   try {
-    // 1. 注文の作成 POST /v2/orders（Catalog のバリエーションIDを指定）
+    // ========== 1. 注文の作成 (Orders API) → KDS/POS に表示される Order を生成 ==========
     const order_idempotency_key = crypto.randomUUID();
-    const order_line_items = catalog_object_id
-      ? [{ catalog_object_id, quantity: '1' }]
-      : [{ name: product_name, quantity: '1', base_price_money: { amount: amount_num, currency: 'JPY' } }];
+    let order_line_items;
+
+    if (Array.isArray(payload.line_items) && payload.line_items.length > 0) {
+      order_line_items = payload.line_items.map((item) => ({
+        name: (item.name || 'バインミー').slice(0, 512),
+        quantity: String(item.quantity != null ? item.quantity : '1'),
+        base_price_money: {
+          amount: Number(item.base_price_money?.amount ?? amount_num),
+          currency: (item.base_price_money?.currency || 'JPY'),
+        },
+      }));
+    } else if (catalog_object_id) {
+      order_line_items = [{ catalog_object_id, quantity: '1' }];
+    } else {
+      order_line_items = [
+        { name: product_name, quantity: '1', base_price_money: { amount: amount_num, currency: 'JPY' } },
+      ];
+    }
+
     const order_body = {
       idempotency_key: order_idempotency_key,
       order: {
@@ -128,7 +145,7 @@ module.exports = async function handler(req, res) {
       return;
     }
 
-    // 2. 支払いの作成 POST /v2/payments（order_id を付与）
+    // ========== 2. 決済の作成 (Payments API) → order_id で Order と紐付け KDS/POS に反映 ==========
     const payment_body = {
       idempotency_key: payload.idempotencyKey,
       location_id: payload.locationId,
