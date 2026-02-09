@@ -83,6 +83,7 @@ module.exports = async function handler(req, res) {
   const location_id = process.env.LOCATION_ID || payload.locationId;
   const catalog_object_id = payload.catalog_object_id ? String(payload.catalog_object_id).trim() : null;
   const product_name = (payload.productName || 'バインミー').slice(0, 200);
+  const pickup_display_name = (payload.customerName || 'Customer').slice(0, 100);
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), SQUARE_REQUEST_TIMEOUT_MS);
@@ -120,6 +121,18 @@ module.exports = async function handler(req, res) {
       order: {
         location_id,
         line_items: order_line_items,
+        fulfillments: [
+          {
+            type: 'PICKUP',
+            state: 'PROPOSED',
+            pickup_details: {
+              recipient: {
+                display_name: pickup_display_name,
+              },
+              pickup_at: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+            },
+          },
+        ],
       },
     };
 
