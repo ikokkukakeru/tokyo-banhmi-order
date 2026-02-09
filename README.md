@@ -65,6 +65,32 @@ Each payment method HTML file in `public/examples/` must be configured with your
 
 _Remember: Do not add your credentials to git!_
 
+### 本番環境でテストするには（Vercel デプロイ時）
+
+`card-charge.html` は `/api/config` から Square の環境・認証情報を読み込むため、**環境変数だけで本番/サンドボックスを切り替え**できます。
+
+1. **Square Developer Dashboard で本番用アプリを用意**
+   - [Developer Dashboard](https://developer.squareup.com/apps) で本番用アプリの **Application ID** と **Access Token（本番）** を取得
+   - **Locations** タブで本番用 **Location ID** を取得
+   - 本番アプリで Web Payments SDK が有効であることを確認
+
+2. **Vercel の Environment Variables を本番用に設定**
+   - `SQUARE_ENVIRONMENT` = **`production`**（必ず指定。`sandbox` のままだとサンドボックス用 ID と squareupsandbox.com が使われます）
+   - `SQUARE_ACCESS_TOKEN` = 本番用 Access Token
+   - `SQUARE_APPLICATION_ID` = **本番用 Application ID（`sq0idp-...` で始まるもの）**。ここがサンドボックス用（`sandbox-sq0idb-...`）のままだとトークン化が本番で動きません
+   - `LOCATION_ID` = 本番用 Location ID
+
+3. **再デプロイ**後、`/examples/card-charge.html` にアクセスすると、本番の Square.js と認証情報で決済が動作します。画面上部に「本番環境」と出ていれば本番設定です（「サンドボックス」のままなら環境変数を見直してください）。
+
+| 環境変数 | サンドボックス | 本番 |
+|----------|----------------|------|
+| `SQUARE_ENVIRONMENT` | `sandbox` | `production` |
+| `SQUARE_ACCESS_TOKEN` | Sandbox 用トークン | 本番用トークン |
+| `SQUARE_APPLICATION_ID` | （任意・未設定時はサンドボックス用デフォルト） | 本番用 Application ID |
+| `LOCATION_ID` | （任意・未設定時はサンドボックス用デフォルト） | 本番用 Location ID |
+
+本番決済では実際の請求が発生するため、少額でテストすることを推奨します。
+
 ## Development
 
 ### Setup

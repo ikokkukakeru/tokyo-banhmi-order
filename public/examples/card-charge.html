@@ -347,14 +347,28 @@
       .banhmi-page input:focus {
         border-color: var(--banhmi-orange);
       }
+
+      .banhmi-page .env-badge {
+        display: inline-block;
+        font-size: 0.7rem;
+        padding: 4px 10px;
+        border-radius: 20px;
+        margin-top: 8px;
+        font-weight: 600;
+      }
+      .banhmi-page .env-badge.env-sandbox {
+        background: rgba(232, 93, 4, 0.2);
+        color: var(--banhmi-orange-dark);
+      }
+      .banhmi-page .env-badge.env-production {
+        background: rgba(45, 106, 79, 0.2);
+        color: var(--banhmi-green);
+      }
     </style>
-    <script
-      type="text/javascript"
-      src="https://sandbox.web.squarecdn.com/v1/square.js"
-    ></script>
     <script>
-      const appId = 'sandbox-sq0idb-oKEv1VNR-uF3ECUHWG5WCA';
-      const locationId = 'LSB41KX7QNYRJ';
+      // 環境に応じて /api/config から取得（本番/サンドボックス切り替え）
+      let appId = '';
+      let locationId = '';
 
       // サーバーから取得したメニュー項目 { variationId, name, amount }
       let menuItems = [];
@@ -569,33 +583,64 @@
       }
 
       document.addEventListener('DOMContentLoaded', async function () {
-        await loadAndRenderMenu();
-
-        if (!window.Square) {
-          throw new Error('Square.js failed to load properly');
-        }
-
-        let payments;
+        let config;
         try {
-          payments = window.Square.payments(appId, locationId);
-        } catch {
-          const statusContainer = document.getElementById(
-            'payment-status-container',
-          );
+          const res = await fetch('/api/config');
+          config = await res.json();
+          if (!res.ok || !config.applicationId || !config.locationId) {
+            throw new Error('Config missing');
+          }
+          appId = config.applicationId;
+          locationId = config.locationId;
+          const envBadge = document.getElementById('env-badge');
+          if (envBadge) {
+            envBadge.style.display = 'inline-block';
+            envBadge.textContent = config.squareEnvironment === 'production' ? '本番環境' : 'サンドボックス';
+            envBadge.className = 'env-badge env-' + (config.squareEnvironment === 'production' ? 'production' : 'sandbox');
+          }
+        } catch (e) {
+          const statusContainer = document.getElementById('payment-status-container');
           statusContainer.className = 'missing-credentials';
           statusContainer.style.visibility = 'visible';
+          statusContainer.textContent = '設定を読み込めませんでした。環境変数を確認してください。';
+          document.getElementById('menu-list').innerHTML = '<p class="menu-error">設定を読み込めませんでした。</p>';
           return;
         }
 
-        let card;
-        try {
-          card = await initializeCard(payments);
-        } catch (e) {
-          console.error('Initializing Card failed', e);
-          return;
-        }
+        const script = document.createElement('script');
+        script.src = config.squareJsUrl;
+        script.async = false;
+        script.onload = async function () {
+          await loadAndRenderMenu();
 
-        async function handlePaymentMethodSubmission(event, card) {
+          if (!window.Square) {
+            const statusContainer = document.getElementById('payment-status-container');
+            statusContainer.className = 'missing-credentials';
+            statusContainer.style.visibility = 'visible';
+            statusContainer.textContent = 'Square.js の読み込みに失敗しました。';
+            return;
+          }
+
+          let payments;
+          try {
+            payments = window.Square.payments(appId, locationId);
+          } catch {
+            const statusContainer = document.getElementById('payment-status-container');
+            statusContainer.className = 'missing-credentials';
+            statusContainer.style.visibility = 'visible';
+            statusContainer.textContent = 'Application ID / Location ID が正しくありません。';
+            return;
+          }
+
+          let card;
+          try {
+            card = await initializeCard(payments);
+          } catch (e) {
+            console.error('Initializing Card failed', e);
+            return;
+          }
+
+          async function handlePaymentMethodSubmission(event, card) {
           event.preventDefault();
 
           const customerNameInput = document.getElementById('customer-name');
@@ -638,12 +683,14 @@
           }
         }
 
-        const cardButton = document.getElementById('card-button');
-        cardButton.addEventListener('click', async function (event) {
-          await handlePaymentMethodSubmission(event, card);
-        });
+          const cardButton = document.getElementById('card-button');
+          cardButton.addEventListener('click', async function (event) {
+            await handlePaymentMethodSubmission(event, card);
+          });
 
-        updatePaymentDisplay();
+          updatePaymentDisplay();
+        };
+        document.head.appendChild(script);
       });
     </script>
   </head>
@@ -652,6 +699,7 @@
       <header class="banhmi-header">
         <h1>TOKYO BANH MI STAND</h1>
         <p>ベトナムサンドイッチ専門店</p>
+        <p id="env-badge" class="env-badge" style="display: none;" aria-live="polite"></p>
       </header>
 
       <section class="menu-section">
