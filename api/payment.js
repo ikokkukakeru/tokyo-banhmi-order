@@ -100,14 +100,33 @@ module.exports = async function handler(req, res) {
     let order_line_items;
 
     if (Array.isArray(payload.line_items) && payload.line_items.length > 0) {
-      order_line_items = payload.line_items.map((item) => ({
-        name: (item.name || 'バインミー').slice(0, 512),
-        quantity: String(item.quantity != null ? item.quantity : '1'),
-        base_price_money: {
-          amount: Number(item.base_price_money?.amount ?? amount_num),
-          currency: (item.base_price_money?.currency || 'JPY'),
-        },
-      }));
+      order_line_items = payload.line_items.map((item) => {
+        const id_from_item =
+          item.catalog_object_id ||
+          item.catalogObjectId ||
+          item.variationId ||
+          item.variation_id;
+
+        const quantity = String(item.quantity != null ? item.quantity : '1');
+
+        // カタログID/バリエーションIDがある場合は ID のみで作成（Ad-hocにならないようにする）
+        if (id_from_item) {
+          return {
+            catalog_object_id: String(id_from_item),
+            quantity,
+          };
+        }
+
+        // ID がない場合のみ、フォールバックとして name + base_price_money を使う
+        return {
+          name: (item.name || product_name).slice(0, 512),
+          quantity,
+          base_price_money: {
+            amount: Number(item.base_price_money?.amount ?? amount_num),
+            currency: item.base_price_money?.currency || 'JPY',
+          },
+        };
+      });
     } else if (catalog_object_id) {
       order_line_items = [{ catalog_object_id, quantity: '1' }];
     } else {
