@@ -482,7 +482,7 @@
 
       const PAYMENT_REQUEST_TIMEOUT_MS = 25000;
 
-      async function createPayment(token, amount, customerName, customerNotes, productName, catalogObjectId) {
+      async function createPayment(token, amount, customerName, customerNotes, productName, catalogObjectId, lineItems) {
         const payload = {
           locationId,
           sourceId: token,
@@ -490,9 +490,13 @@
           amount,
           customerName: customerName?.trim() || '',
           customerNotes: customerNotes?.trim() || '',
-          productName,
+          productName: productName || '注文',
         };
-        if (catalogObjectId) payload.catalog_object_id = catalogObjectId;
+        if (lineItems && lineItems.length > 0) {
+          payload.line_items = lineItems;
+        } else if (catalogObjectId) {
+          payload.catalog_object_id = catalogObjectId;
+        }
         const body = JSON.stringify(payload);
 
         const controller = new AbortController();
@@ -582,6 +586,19 @@
         statusContainer.style.visibility = 'visible';
       }
 
+      const urlParams = new URLSearchParams(window.location.search);
+      const isKioskMode = urlParams.get('kiosk') === '1';
+      let kioskAmount = 0;
+      let kioskLineItems = [];
+      if (isKioskMode) {
+        try {
+          const totalStr = urlParams.get('amount') || sessionStorage.getItem('kioskTotal') || '0';
+          kioskAmount = parseInt(totalStr, 10) || 0;
+          const cartStr = sessionStorage.getItem('kioskCart');
+          if (cartStr) kioskLineItems = JSON.parse(cartStr);
+        } catch (e) {}
+      }
+
       document.addEventListener('DOMContentLoaded', async function () {
         let config;
         try {
@@ -611,7 +628,17 @@
         script.src = config.squareJsUrl;
         script.async = false;
         script.onload = async function () {
-          await loadAndRenderMenu();
+          if (!isKioskMode) {
+            await loadAndRenderMenu();
+          } else {
+            document.getElementById('menu-list').innerHTML = '<p class="menu-loading">キオスクからの注文</p>';
+            const menuSection = document.querySelector('.menu-section');
+            if (menuSection) menuSection.style.display = 'none';
+            if (kioskAmount > 0) {
+              document.getElementById('payment-total-amount').textContent = '¥' + kioskAmount.toLocaleString();
+              document.getElementById('card-button').textContent = '¥' + kioskAmount.toLocaleString() + ' で支払う';
+            }
+          }
 
           if (!window.Square) {
             const statusContainer = document.getElementById('payment-status-container');
@@ -654,17 +681,21 @@
             return;
           }
 
-          const amount = getSelectedAmount();
-          const productName = getSelectedProductName();
+          const amount = isKioskMode ? kioskAmount : getSelectedAmount();
+          const productName = isKioskMode ? 'キオスク注文' : getSelectedProductName();
+          const catalogObjectId = isKioskMode ? null : getSelectedVariationId();
+          const lineItems = isKioskMode && kioskLineItems.length > 0 ? kioskLineItems : null;
 
           const originalButtonText = cardButton.textContent;
           try {
             cardButton.disabled = true;
             cardButton.textContent = '処理中...';
             const token = await tokenize(card, amount);
-            const catalogObjectId = getSelectedVariationId();
-            const paymentResults = await createPayment(token, amount, customerName, customerNotes, productName, catalogObjectId);
+            const paymentResults = await createPayment(token, amount, customerName, customerNotes, productName, catalogObjectId, lineItems);
             const orderId = paymentResults?.payment?.orderId || '';
+            if (isKioskMode) {
+              try { sessionStorage.removeItem('kioskCart'); sessionStorage.removeItem('kioskTotal'); } catch (e) {}
+            }
             document.getElementById('payment-form').style.display = 'none';
             document.getElementById('payment-status-container').style.display = 'none';
             const successOrderIdEl = document.getElementById('success-order-id');

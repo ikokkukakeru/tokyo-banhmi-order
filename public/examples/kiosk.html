@@ -1,0 +1,780 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>BANH MI FACTORY - キオスク</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --background: #f0faf6;
+        --foreground: #1a2e28;
+        --card: #ffffff;
+        --card-foreground: #1a2e28;
+        --primary: #0d9488;
+        --primary-foreground: #f0fdfa;
+        --secondary: #ccfbf1;
+        --secondary-foreground: #134e4a;
+        --muted: #f0fdfa;
+        --muted-foreground: #5f7a74;
+        --destructive: #dc2626;
+        --border: #99f6e4;
+        --radius: 0.75rem;
+      }
+
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: 'Noto Sans JP', sans-serif;
+        background: var(--background);
+        color: var(--foreground);
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* Header */
+      .kiosk-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid var(--border);
+        background: var(--card);
+        padding: 12px 24px;
+        flex-shrink: 0;
+      }
+      .kiosk-header-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .kiosk-header-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        background: var(--primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary-foreground);
+      }
+      .kiosk-header-icon svg { width: 20px; height: 20px; }
+      .kiosk-header h1 {
+        font-size: 1.125rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        margin: 0;
+        color: var(--card-foreground);
+      }
+      .kiosk-header .tagline {
+        font-size: 10px;
+        font-weight: 500;
+        color: var(--muted-foreground);
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        margin: 0;
+      }
+      .kiosk-header-right {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+      .eat-in-badge {
+        text-align: right;
+      }
+      .eat-in-badge p { margin: 0; font-size: 12px; }
+      .eat-in-badge .label { color: var(--muted-foreground); }
+      .eat-in-badge .value { font-weight: 700; color: var(--primary); }
+      .lang-toggle {
+        display: flex;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        overflow: hidden;
+      }
+      .lang-toggle span {
+        padding: 6px 12px;
+        font-size: 12px;
+        font-weight: 700;
+      }
+      .lang-toggle .active {
+        background: var(--primary);
+        color: var(--primary-foreground);
+      }
+      .lang-toggle .inactive {
+        background: transparent;
+        color: var(--muted-foreground);
+        cursor: pointer;
+      }
+
+      /* Main layout */
+      .kiosk-main {
+        display: flex;
+        flex: 1;
+        overflow: hidden;
+      }
+      .kiosk-menu-area {
+        width: 66.666%;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        background: var(--background);
+      }
+      .kiosk-category-tabs {
+        flex-shrink: 0;
+        padding: 20px 24px 16px;
+      }
+      .kiosk-category-tabs nav {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .kiosk-category-tabs button {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        border-radius: 12px;
+        padding: 14px 24px;
+        font-size: 1rem;
+        font-weight: 700;
+        font-family: inherit;
+        border: 1px solid var(--border);
+        background: var(--card);
+        color: var(--muted-foreground);
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .kiosk-category-tabs button:hover {
+        background: var(--secondary);
+        color: var(--secondary-foreground);
+      }
+      .kiosk-category-tabs button.active {
+        background: var(--primary);
+        color: var(--primary-foreground);
+        border-color: var(--primary);
+        box-shadow: 0 2px 8px rgba(13, 148, 136, 0.3);
+      }
+      .kiosk-category-tabs button:focus-visible {
+        outline: 2px solid var(--primary);
+        outline-offset: 2px;
+      }
+      .kiosk-menu-grid {
+        flex: 1;
+        overflow-y: auto;
+        padding: 0 24px 24px;
+      }
+      .kiosk-menu-grid-inner {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+      }
+      .kiosk-menu-card {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        border-radius: 12px;
+        background: var(--card);
+        border: 1px solid var(--border);
+        cursor: pointer;
+        transition: all 0.2s;
+        text-align: left;
+      }
+      .kiosk-menu-card:hover {
+        box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+        border-color: rgba(13, 148, 136, 0.3);
+      }
+      .kiosk-menu-card:active { transform: scale(0.97); }
+      .kiosk-menu-card:focus-visible {
+        outline: 2px solid var(--primary);
+        outline-offset: 2px;
+      }
+      .kiosk-menu-card-image {
+        aspect-ratio: 4/3;
+        background: var(--muted);
+        position: relative;
+        overflow: hidden;
+      }
+      .kiosk-menu-card-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .kiosk-menu-card-image .placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--muted-foreground);
+        font-size: 12px;
+      }
+      .kiosk-menu-card-badge {
+        position: absolute;
+        top: 8px;
+        left: 8px;
+        background: var(--primary);
+        color: var(--primary-foreground);
+        font-size: 11px;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 6px;
+      }
+      .kiosk-menu-card-body {
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+      }
+      .kiosk-menu-card-body h3 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 1.3;
+        color: var(--card-foreground);
+      }
+      .kiosk-menu-card-body .name-en {
+        margin: 2px 0 0 0;
+        font-size: 10px;
+        font-weight: 500;
+        color: var(--muted-foreground);
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+      .kiosk-menu-card-footer {
+        margin-top: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .kiosk-menu-card-price {
+        font-size: 1.125rem;
+        font-weight: 800;
+        color: var(--primary);
+        font-variant-numeric: tabular-nums;
+      }
+      .kiosk-menu-card-add {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: var(--primary);
+        color: var(--primary-foreground);
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        flex-shrink: 0;
+      }
+      .kiosk-menu-card-add svg { width: 20px; height: 20px; }
+
+      /* Cart sidebar */
+      .kiosk-cart {
+        width: 33.333%;
+        display: flex;
+        flex-direction: column;
+        background: var(--card);
+        border-left: 1px solid var(--border);
+        min-width: 0;
+      }
+      .kiosk-cart-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid var(--border);
+        padding: 16px 20px;
+      }
+      .kiosk-cart-header-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .kiosk-cart-header-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        background: rgba(13, 148, 136, 0.1);
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .kiosk-cart-header-icon svg { width: 20px; height: 20px; }
+      .kiosk-cart-header h2 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--card-foreground);
+      }
+      .kiosk-cart-header .count {
+        font-size: 12px;
+        color: var(--muted-foreground);
+        margin: 0;
+      }
+      .kiosk-cart-clear {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 12px;
+        font-size: 12px;
+        font-weight: 600;
+        font-family: inherit;
+        color: var(--destructive);
+        background: transparent;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+      .kiosk-cart-clear:hover { background: rgba(220, 38, 38, 0.1); }
+      .kiosk-cart-clear:disabled { display: none; }
+      .kiosk-cart-list {
+        flex: 1;
+        overflow-y: auto;
+      }
+      .kiosk-cart-empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 48px 24px;
+        text-align: center;
+      }
+      .kiosk-cart-empty-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 16px;
+        background: var(--muted);
+        color: var(--muted-foreground);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 16px;
+      }
+      .kiosk-cart-empty-icon svg { width: 32px; height: 32px; opacity: 0.5; }
+      .kiosk-cart-empty p { margin: 0; font-size: 14px; font-weight: 600; color: var(--muted-foreground); }
+      .kiosk-cart-empty .hint { margin-top: 4px; font-size: 12px; opacity: 0.8; }
+      .kiosk-cart-item {
+        padding: 14px 20px;
+        border-bottom: 1px solid var(--border);
+      }
+      .kiosk-cart-item-name {
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--card-foreground);
+      }
+      .kiosk-cart-item-meta {
+        font-size: 12px;
+        color: var(--muted-foreground);
+        margin-top: 2px;
+      }
+      .kiosk-cart-item-line-total {
+        font-size: 14px;
+        font-weight: 800;
+        color: var(--card-foreground);
+        font-variant-numeric: tabular-nums;
+      }
+      .kiosk-cart-item-controls {
+        margin-top: 8px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .kiosk-cart-item-controls button {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: var(--card);
+        color: var(--card-foreground);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-family: inherit;
+        transition: all 0.15s;
+      }
+      .kiosk-cart-item-controls button:hover:not(:disabled) {
+        background: var(--secondary);
+      }
+      .kiosk-cart-item-controls button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+      .kiosk-cart-item-controls button.destructive {
+        border-color: rgba(220, 38, 38, 0.3);
+        color: var(--destructive);
+      }
+      .kiosk-cart-item-controls button.destructive:hover:not(:disabled) {
+        background: rgba(220, 38, 38, 0.1);
+      }
+      .kiosk-cart-item-controls .qty {
+        width: 48px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        background: var(--muted);
+        font-size: 14px;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+      }
+      .kiosk-cart-footer {
+        border-top: 1px solid var(--border);
+        padding: 16px 20px;
+      }
+      .kiosk-cart-totals {
+        padding-bottom: 8px;
+      }
+      .kiosk-cart-totals .row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 14px;
+        color: var(--muted-foreground);
+        margin-top: 4px;
+      }
+      .kiosk-cart-totals .row.total-row {
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid var(--border);
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--card-foreground);
+      }
+      .kiosk-cart-totals .row.total-row .value {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--primary);
+      }
+      .kiosk-pay-btn {
+        width: 100%;
+        margin-top: 16px;
+        padding: 20px 24px;
+        border-radius: 16px;
+        border: none;
+        background: var(--muted);
+        color: var(--muted-foreground);
+        font-size: 1.125rem;
+        font-weight: 800;
+        font-family: inherit;
+        letter-spacing: 0.05em;
+        cursor: not-allowed;
+        transition: all 0.2s;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+      }
+      .kiosk-pay-btn.has-items {
+        background: var(--primary);
+        color: var(--primary-foreground);
+        cursor: pointer;
+        box-shadow: 0 4px 14px rgba(13, 148, 136, 0.4);
+      }
+      .kiosk-pay-btn.has-items:hover {
+        box-shadow: 0 6px 20px rgba(13, 148, 136, 0.45);
+      }
+      .kiosk-pay-btn.has-items:active { transform: scale(0.98); }
+      .kiosk-pay-btn .methods {
+        font-size: 12px;
+        font-weight: 500;
+        opacity: 0.85;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .kiosk-loading {
+        padding: 48px 24px;
+        text-align: center;
+        color: var(--muted-foreground);
+      }
+    </style>
+  </head>
+  <body>
+    <header class="kiosk-header">
+      <div class="kiosk-header-left">
+        <div class="kiosk-header-icon" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>
+        </div>
+        <div>
+          <h1>BANH MI FACTORY</h1>
+          <p class="tagline">Fresh Vietnamese Sandwiches</p>
+        </div>
+      </div>
+      <div class="kiosk-header-right">
+        <div class="eat-in-badge">
+          <p class="label">店内でお召し上がり</p>
+          <p class="value">イートイン</p>
+        </div>
+        <div class="lang-toggle">
+          <span class="active">JP</span>
+          <span class="inactive">EN</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="kiosk-main">
+      <main class="kiosk-menu-area" aria-label="メニュー">
+        <div class="kiosk-category-tabs">
+          <nav role="tablist" aria-label="メニューカテゴリ">
+            <button type="button" role="tab" aria-selected="true" class="active" data-category="all">メニュー</button>
+          </nav>
+        </div>
+        <div class="kiosk-menu-grid">
+          <div class="kiosk-menu-grid-inner" id="menu-grid">
+            <p class="kiosk-loading" id="menu-loading">メニューを読み込み中...</p>
+          </div>
+        </div>
+      </main>
+
+      <aside class="kiosk-cart" aria-label="注文カート">
+        <div class="kiosk-cart-header">
+          <div class="kiosk-cart-header-left">
+            <div class="kiosk-cart-header-icon" aria-hidden="true">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+            </div>
+            <div>
+              <h2>ご注文内容</h2>
+              <p class="count" id="cart-count"></p>
+            </div>
+          </div>
+          <button type="button" class="kiosk-cart-clear" id="cart-clear" disabled aria-label="注文を全てクリア">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+            クリア
+          </button>
+        </div>
+        <div class="kiosk-cart-list">
+          <div class="kiosk-cart-empty" id="cart-empty">
+            <div class="kiosk-cart-empty-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+            </div>
+            <p>商品が選択されていません</p>
+            <p class="hint">左のメニューからお選びください</p>
+          </div>
+          <ul id="cart-items" style="display: none;"></ul>
+        </div>
+        <div class="kiosk-cart-footer">
+          <div class="kiosk-cart-totals" id="cart-totals" style="display: none;">
+            <div class="row"><span>小計</span><span class="value" id="cart-subtotal">¥0</span></div>
+            <div class="row"><span>消費税（10%）</span><span class="value" id="cart-tax">¥0</span></div>
+            <div class="row total-row"><span>合計</span><span class="value" id="cart-total">¥0</span></div>
+          </div>
+          <button type="button" class="kiosk-pay-btn" id="pay-btn" disabled>
+            <span>お支払いへ進む</span>
+            <span class="methods">クレジットカード　|　交通系IC　|　QR決済</span>
+          </button>
+        </div>
+      </aside>
+    </div>
+
+    <script>
+      (function () {
+        const MENU_STORAGE_KEY = 'kioskMenuItems';
+        const CART_STORAGE_KEY = 'kioskCart';
+        const TOTAL_STORAGE_KEY = 'kioskTotal';
+
+        let menuItems = [];
+
+        function buildMenuFromCatalog(objects) {
+          const items = [];
+          if (!Array.isArray(objects)) return items;
+          for (const obj of objects) {
+            if (obj.type !== 'ITEM' || !obj.item_data) continue;
+            const variations = obj.item_data.variations;
+            if (!variations || variations.length === 0) continue;
+            const v0 = variations[0];
+            const variationId = v0.id;
+            const priceMoney = v0.item_variation_data?.price_money;
+            const amount = priceMoney != null ? Number(priceMoney.amount) || 0 : 0;
+            const name = (obj.item_data.name || '商品').trim();
+            items.push({
+              id: variationId,
+              variationId,
+              name,
+              nameEn: '',
+              price: amount,
+            });
+          }
+          return items;
+        }
+
+        function renderMenuGrid(items) {
+          const grid = document.getElementById('menu-grid');
+          const loading = document.getElementById('menu-loading');
+          if (!grid) return;
+          if (loading) loading.remove();
+          grid.innerHTML = '';
+          if (items.length === 0) {
+            grid.innerHTML = '<p class="kiosk-loading">メニューがありません</p>';
+            return;
+          }
+          menuItems = items;
+          items.forEach(function (item) {
+            const card = document.createElement('button');
+            card.type = 'button';
+            card.className = 'kiosk-menu-card';
+            card.setAttribute('aria-label', item.name + ' を追加 ' + item.price + '円');
+            card.innerHTML =
+              '<div class="kiosk-menu-card-image">' +
+                '<div class="placeholder">' + (item.nameEn || item.name) + '</div>' +
+              '</div>' +
+              '<div class="kiosk-menu-card-body">' +
+                '<h3>' + escapeHtml(item.name) + '</h3>' +
+                (item.nameEn ? '<p class="name-en">' + escapeHtml(item.nameEn) + '</p>' : '') +
+                '<div class="kiosk-menu-card-footer">' +
+                  '<span class="kiosk-menu-card-price">¥' + item.price.toLocaleString() + '</span>' +
+                  '<span class="kiosk-menu-card-add" aria-hidden="true">' +
+                    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
+                  '</span>' +
+                '</div>' +
+              '</div>';
+            card.dataset.id = item.id;
+            card.dataset.variationId = item.variationId;
+            card.dataset.name = item.name;
+            card.dataset.price = String(item.price);
+            card.addEventListener('click', function () { addToCart(item); });
+            grid.appendChild(card);
+          });
+        }
+
+        function escapeHtml(s) {
+          const div = document.createElement('div');
+          div.textContent = s;
+          return div.innerHTML;
+        }
+
+        let cart = [];
+
+        function addToCart(item) {
+          const existing = cart.find(function (ci) { return ci.id === item.id; });
+          if (existing) {
+            existing.quantity += 1;
+          } else {
+            cart.push({
+              id: item.id,
+              variationId: item.variationId,
+              name: item.name,
+              price: item.price,
+              quantity: 1,
+            });
+          }
+          renderCart();
+        }
+
+        function updateQuantity(id, delta) {
+          const ci = cart.find(function (c) { return c.id === id; });
+          if (!ci) return;
+          ci.quantity += delta;
+          if (ci.quantity <= 0) {
+            cart = cart.filter(function (c) { return c.id !== id; });
+          }
+          renderCart();
+        }
+
+        function clearCart() {
+          cart = [];
+          renderCart();
+        }
+
+        function renderCart() {
+          const emptyEl = document.getElementById('cart-empty');
+          const listEl = document.getElementById('cart-items');
+          const totalsEl = document.getElementById('cart-totals');
+          const countEl = document.getElementById('cart-count');
+          const clearBtn = document.getElementById('cart-clear');
+          const payBtn = document.getElementById('pay-btn');
+          const subtotalEl = document.getElementById('cart-subtotal');
+          const taxEl = document.getElementById('cart-tax');
+          const totalEl = document.getElementById('cart-total');
+
+          const totalItems = cart.reduce(function (sum, ci) { return sum + ci.quantity; }, 0);
+          const subtotal = cart.reduce(function (sum, ci) { return sum + ci.price * ci.quantity; }, 0);
+          const tax = Math.floor(subtotal * 0.1);
+          const grandTotal = subtotal + tax;
+
+          if (cart.length === 0) {
+            if (emptyEl) emptyEl.style.display = 'flex';
+            if (listEl) { listEl.style.display = 'none'; listEl.innerHTML = ''; }
+            if (totalsEl) totalsEl.style.display = 'none';
+            if (countEl) countEl.textContent = '';
+            if (clearBtn) clearBtn.disabled = true;
+            if (payBtn) { payBtn.disabled = true; payBtn.classList.remove('has-items'); }
+          } else {
+            if (emptyEl) emptyEl.style.display = 'none';
+            if (listEl) {
+              listEl.style.display = 'block';
+              listEl.innerHTML = cart.map(function (ci) {
+                const lineTotal = ci.price * ci.quantity;
+                return '<li class="kiosk-cart-item">' +
+                  '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">' +
+                    '<div style="flex:1;min-width:0;">' +
+                      '<p class="kiosk-cart-item-name">' + escapeHtml(ci.name) + '</p>' +
+                      '<p class="kiosk-cart-item-meta">¥' + ci.price.toLocaleString() + ' × ' + ci.quantity + '</p>' +
+                    '</div>' +
+                    '<span class="kiosk-cart-item-line-total">¥' + lineTotal.toLocaleString() + '</span>' +
+                  '</div>' +
+                  '<div class="kiosk-cart-item-controls">' +
+                    '<button type="button" class="' + (ci.quantity === 1 ? 'destructive' : '') + '" data-id="' + escapeHtml(ci.id) + '" data-delta="-1" aria-label="' + (ci.quantity === 1 ? '削除' : '1つ減らす') + '">' +
+                      (ci.quantity === 1 ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>' : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>') +
+                    '</button>' +
+                    '<span class="qty" aria-live="polite">' + ci.quantity + '</span>' +
+                    '<button type="button" data-id="' + escapeHtml(ci.id) + '" data-delta="1" aria-label="1つ追加">' +
+                      '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
+                    '</button>' +
+                  '</div>' +
+                '</li>';
+              }).join('');
+            }
+            listEl.querySelectorAll('button[data-id][data-delta]').forEach(function (btn) {
+              btn.addEventListener('click', function () {
+                updateQuantity(btn.dataset.id, parseInt(btn.dataset.delta, 10));
+              });
+            });
+            if (totalsEl) {
+              totalsEl.style.display = 'block';
+              if (subtotalEl) subtotalEl.textContent = '¥' + subtotal.toLocaleString();
+              if (taxEl) taxEl.textContent = '¥' + tax.toLocaleString();
+              if (totalEl) totalEl.textContent = '¥' + grandTotal.toLocaleString();
+            }
+            if (countEl) countEl.textContent = totalItems + '点';
+            if (clearBtn) clearBtn.disabled = false;
+            if (payBtn) { payBtn.disabled = false; payBtn.classList.add('has-items'); }
+          }
+        }
+
+        function goToPayment() {
+          if (cart.length === 0) return;
+          const subtotal = cart.reduce(function (sum, ci) { return sum + ci.price * ci.quantity; }, 0);
+          const tax = Math.floor(subtotal * 0.1);
+          const grandTotal = subtotal + tax;
+          const lineItemsForApi = cart.map(function (ci) {
+            return {
+              catalog_object_id: ci.variationId,
+              quantity: ci.quantity,
+              base_price_money: { amount: ci.price, currency: 'JPY' },
+            };
+          });
+          try {
+            sessionStorage.setItem(CART_STORAGE_KEY, JSON.stringify(lineItemsForApi));
+            sessionStorage.setItem(TOTAL_STORAGE_KEY, String(grandTotal));
+          } catch (e) {}
+          window.location.href = '/examples/card-charge.html?amount=' + encodeURIComponent(grandTotal) + '&kiosk=1';
+        }
+
+        document.getElementById('cart-clear').addEventListener('click', clearCart);
+        document.getElementById('pay-btn').addEventListener('click', goToPayment);
+
+        fetch('/api/items')
+          .then(function (res) { return res.json(); })
+          .then(function (data) {
+            const items = buildMenuFromCatalog(data.objects || []);
+            renderMenuGrid(items);
+          })
+          .catch(function () {
+            document.getElementById('menu-grid').innerHTML = '<p class="kiosk-loading">メニューを読み込めませんでした</p>';
+          });
+      })();
+    </script>
+  </body>
+</html>
