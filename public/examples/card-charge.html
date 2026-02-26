@@ -307,6 +307,44 @@
         background: var(--banhmi-orange-dark);
       }
 
+      .banhmi-page .terminal-pay-btn {
+        display: block;
+        width: 100%;
+        margin-top: 12px;
+        padding: 14px 20px;
+        font-size: 1rem;
+        font-weight: 700;
+        font-family: inherit;
+        color: var(--banhmi-green);
+        background: transparent;
+        border: 2px solid var(--banhmi-green);
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .banhmi-page .terminal-pay-btn:hover {
+        background: rgba(45, 106, 79, 0.1);
+      }
+      .banhmi-page .terminal-waiting {
+        margin-top: 20px;
+        padding: 24px;
+        text-align: center;
+        background: rgba(45, 106, 79, 0.08);
+        border: 2px solid var(--banhmi-green-pale);
+        border-radius: 12px;
+      }
+      .banhmi-page .terminal-waiting-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--banhmi-green);
+        margin: 0 0 8px 0;
+      }
+      .banhmi-page .terminal-waiting-note {
+        font-size: 0.9rem;
+        color: var(--banhmi-brown);
+        margin: 0;
+      }
+
       .banhmi-page #payment-status-container {
         margin-top: 20px;
         border-radius: 12px;
@@ -824,6 +862,93 @@
             await handlePaymentMethodSubmission(event, card);
           });
 
+          async function handleTerminalPay() {
+            const customerNameInput = document.getElementById('customer-name');
+            const customerNotesInput = document.getElementById('customer-notes');
+            const customerName = customerNameInput?.value || '';
+            const customerNotes = customerNotesInput?.value || '';
+            if (!customerName.trim()) {
+              customerNameInput?.focus();
+              customerNameInput?.reportValidity?.();
+              return;
+            }
+            const amount = isKioskMode ? kioskAmount : getSelectedAmount();
+            const productName = isKioskMode ? 'キオスク注文' : getSelectedProductName();
+            const catalogObjectId = isKioskMode ? null : getSelectedVariationId();
+            const payload = {
+              locationId,
+              amount,
+              customerName: customerName.trim(),
+              customerNotes: customerNotes.trim(),
+              productName,
+            };
+            if (isKioskMode && kioskLineItems.length > 0) {
+              payload.line_items = kioskLineItems;
+            } else if (catalogObjectId) {
+              payload.catalog_object_id = catalogObjectId;
+            }
+            const terminalBtn = document.getElementById('terminal-button');
+            try {
+              terminalBtn.disabled = true;
+              const res = await fetch('/api/terminal-checkout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+              });
+              const data = await res.json();
+              if (!res.ok) {
+                throw new Error(data?.errors?.[0]?.detail || data?.error || 'ターミナル送信に失敗しました');
+              }
+              document.getElementById('payment-form').style.display = 'none';
+              document.getElementById('payment-status-container').style.display = 'none';
+              document.getElementById('terminal-waiting').style.display = 'block';
+              const checkoutId = data.checkoutId;
+              const orderIdFromCheckout = data.orderId;
+              const pollInterval = setInterval(async function () {
+                try {
+                  const statusRes = await fetch('/api/terminal-checkout-status?checkout_id=' + encodeURIComponent(checkoutId));
+                  const statusData = await statusRes.json();
+                  const status = statusData?.status;
+                  if (status === 'COMPLETED') {
+                    clearInterval(pollInterval);
+                    document.getElementById('terminal-waiting').style.display = 'none';
+                    const successOrderIdEl = document.getElementById('success-order-id');
+                    if (successOrderIdEl) successOrderIdEl.textContent = statusData.orderId || orderIdFromCheckout || '';
+                    document.getElementById('success-view').style.display = 'block';
+                    if (isKioskMode) {
+                      try { sessionStorage.removeItem('kioskCart'); sessionStorage.removeItem('kioskTotal'); } catch (e) {}
+                    }
+                  } else if (status === 'CANCELED' || status === 'CANCEL_REQUESTED') {
+                    clearInterval(pollInterval);
+                    document.getElementById('terminal-waiting').style.display = 'none';
+                    document.getElementById('payment-form').style.display = 'block';
+                    terminalBtn.disabled = false;
+                    displayPaymentResults('FAILURE');
+                    const sc = document.getElementById('payment-status-container');
+                    sc.style.display = 'block';
+                    sc.textContent = 'ターミナルで支払いがキャンセルされました。';
+                    sc.classList.add('has-custom-message');
+                  }
+                } catch (e) {
+                  console.error('Poll error', e);
+                }
+              }, 2000);
+            } catch (e) {
+              terminalBtn.disabled = false;
+              displayPaymentResults('FAILURE');
+              const sc = document.getElementById('payment-status-container');
+              sc.style.display = 'block';
+              sc.textContent = e && e.message ? e.message : 'ターミナル送信に失敗しました。';
+              sc.classList.add('has-custom-message');
+            }
+          }
+
+          const terminalButton = document.getElementById('terminal-button');
+          if (terminalButton) {
+            terminalButton.addEventListener('click', handleTerminalPay);
+            terminalButton.textContent = 'ターミナルで支払う';
+          }
+
           updatePaymentDisplay();
         };
         document.head.appendChild(script);
@@ -887,7 +1012,12 @@
           </p>
           <div id="card-container"></div>
           <button id="card-button" type="button">¥940 で支払う</button>
+          <button id="terminal-button" type="button" class="terminal-pay-btn">ターミナルで支払う</button>
         </form>
+        <div id="terminal-waiting" class="terminal-waiting" style="display: none;">
+          <p class="terminal-waiting-title">ターミナルでお支払いください</p>
+          <p class="terminal-waiting-note">しばらくお待ちください。</p>
+        </div>
         <div id="payment-status-container"></div>
         <div id="success-view">
           <p class="success-title">ご注文ありがとうございます！</p>

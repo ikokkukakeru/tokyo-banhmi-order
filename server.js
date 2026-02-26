@@ -192,11 +192,25 @@ async function handleApiItems(req, res) {
   await apiItems(req, adapter);
 }
 
+async function handleTerminalCheckout(req, res) {
+  const adapter = microAdapter(res);
+  const api = require('./api/terminal-checkout');
+  await api(req, adapter);
+}
+
+async function handleTerminalCheckoutStatus(req, res) {
+  const adapter = microAdapter(res);
+  const api = require('./api/terminal-checkout-status');
+  await api(req, adapter);
+}
+
 // export routes to be served by micro
 module.exports = router(
   post('/payment', createPayment),
   post('/card', storeCard),
   get('/api/config', handleApiConfig),
   get('/api/items', handleApiItems),
+  post('/api/terminal-checkout', handleTerminalCheckout),
+  get('/api/terminal-checkout-status', handleTerminalCheckoutStatus),
   get('/*', serveStatic),
 );
