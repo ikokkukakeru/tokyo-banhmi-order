@@ -12,7 +12,9 @@ const { SquareError, client: square } = require('../server/square');
 function readBody(req) {
   return new Promise((resolve, reject) => {
     let body = '';
-    req.on('data', (chunk) => { body += chunk; });
+    req.on('data', (chunk) => {
+      body += chunk;
+    });
     req.on('end', () => resolve(body));
     req.on('error', reject);
   });
@@ -65,9 +67,11 @@ module.exports = async function handler(req, res) {
           sourceId: payload.sourceId,
           card: { customerId: payload.customerId },
         };
-        if (payload.verificationToken) cardReq.verificationToken = payload.verificationToken;
+        if (payload.verificationToken)
+          cardReq.verificationToken = payload.verificationToken;
 
-        const { result, statusCode } = await square.cardsApi.createCard(cardReq);
+        const { result, statusCode } =
+          await square.cardsApi.createCard(cardReq);
 
         result.card.expMonth = result.card.expMonth.toString();
         result.card.expYear = result.card.expYear.toString();

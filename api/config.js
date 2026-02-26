@@ -9,8 +9,7 @@ const application_id =
   (is_sandbox ? 'sandbox-sq0idb-oKEv1VNR-uF3ECUHWG5WCA' : '');
 
 const location_id =
-  process.env.LOCATION_ID ||
-  (is_sandbox ? 'LSB41KX7QNYRJ' : '');
+  process.env.LOCATION_ID || (is_sandbox ? 'LSB41KX7QNYRJ' : '');
 
 const square_js_url = is_sandbox
   ? 'https://sandbox.web.squarecdn.com/v1/square.js'

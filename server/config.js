@@ -24,6 +24,7 @@ logger.debug('Parsed configuration:', parsed);
 module.exports = {
   ...(parsed || {}),
   // Vercel etc.: use process.env when no .env file
-  SQUARE_ACCESS_TOKEN: parsed?.SQUARE_ACCESS_TOKEN ?? process.env.SQUARE_ACCESS_TOKEN,
+  SQUARE_ACCESS_TOKEN:
+    parsed?.SQUARE_ACCESS_TOKEN ?? process.env.SQUARE_ACCESS_TOKEN,
   isProduction,
 };

@@ -6,7 +6,10 @@
     <title>BANH MI FACTORY - キオスク</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
     <style>
       :root {
         --background: #f0faf6;
@@ -24,7 +27,9 @@
         --radius: 0.75rem;
       }
 
-      * { box-sizing: border-box; }
+      * {
+        box-sizing: border-box;
+      }
       body {
         margin: 0;
         min-height: 100vh;
@@ -60,7 +65,10 @@
         justify-content: center;
         color: var(--primary-foreground);
       }
-      .kiosk-header-icon svg { width: 20px; height: 20px; }
+      .kiosk-header-icon svg {
+        width: 20px;
+        height: 20px;
+      }
       .kiosk-header h1 {
         font-size: 1.125rem;
         font-weight: 800;
@@ -84,9 +92,17 @@
       .eat-in-badge {
         text-align: right;
       }
-      .eat-in-badge p { margin: 0; font-size: 12px; }
-      .eat-in-badge .label { color: var(--muted-foreground); }
-      .eat-in-badge .value { font-weight: 700; color: var(--primary); }
+      .eat-in-badge p {
+        margin: 0;
+        font-size: 12px;
+      }
+      .eat-in-badge .label {
+        color: var(--muted-foreground);
+      }
+      .eat-in-badge .value {
+        font-weight: 700;
+        color: var(--primary);
+      }
       .lang-toggle {
         display: flex;
         border-radius: 8px;
@@ -181,10 +197,12 @@
         text-align: left;
       }
       .kiosk-menu-card:hover {
-        box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
         border-color: rgba(13, 148, 136, 0.3);
       }
-      .kiosk-menu-card:active { transform: scale(0.97); }
+      .kiosk-menu-card:active {
+        transform: scale(0.97);
+      }
       .kiosk-menu-card:focus-visible {
         outline: 2px solid var(--primary);
         outline-offset: 2px;
@@ -266,7 +284,10 @@
         cursor: pointer;
         flex-shrink: 0;
       }
-      .kiosk-menu-card-add svg { width: 20px; height: 20px; }
+      .kiosk-menu-card-add svg {
+        width: 20px;
+        height: 20px;
+      }
 
       /* Cart sidebar */
       .kiosk-cart {
@@ -299,7 +320,10 @@
         align-items: center;
         justify-content: center;
       }
-      .kiosk-cart-header-icon svg { width: 20px; height: 20px; }
+      .kiosk-cart-header-icon svg {
+        width: 20px;
+        height: 20px;
+      }
       .kiosk-cart-header h2 {
         margin: 0;
         font-size: 1rem;
@@ -326,8 +350,12 @@
         cursor: pointer;
         transition: background 0.2s;
       }
-      .kiosk-cart-clear:hover { background: rgba(220, 38, 38, 0.1); }
-      .kiosk-cart-clear:disabled { display: none; }
+      .kiosk-cart-clear:hover {
+        background: rgba(220, 38, 38, 0.1);
+      }
+      .kiosk-cart-clear:disabled {
+        display: none;
+      }
       .kiosk-cart-list {
         flex: 1;
         overflow-y: auto;
@@ -351,9 +379,22 @@
         justify-content: center;
         margin-bottom: 16px;
       }
-      .kiosk-cart-empty-icon svg { width: 32px; height: 32px; opacity: 0.5; }
-      .kiosk-cart-empty p { margin: 0; font-size: 14px; font-weight: 600; color: var(--muted-foreground); }
-      .kiosk-cart-empty .hint { margin-top: 4px; font-size: 12px; opacity: 0.8; }
+      .kiosk-cart-empty-icon svg {
+        width: 32px;
+        height: 32px;
+        opacity: 0.5;
+      }
+      .kiosk-cart-empty p {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--muted-foreground);
+      }
+      .kiosk-cart-empty .hint {
+        margin-top: 4px;
+        font-size: 12px;
+        opacity: 0.8;
+      }
       .kiosk-cart-item {
         padding: 14px 20px;
         border-bottom: 1px solid var(--border);
@@ -475,7 +516,9 @@
       .kiosk-pay-btn.has-items:hover {
         box-shadow: 0 6px 20px rgba(13, 148, 136, 0.45);
       }
-      .kiosk-pay-btn.has-items:active { transform: scale(0.98); }
+      .kiosk-pay-btn.has-items:active {
+        transform: scale(0.98);
+      }
       .kiosk-pay-btn .methods {
         font-size: 12px;
         font-weight: 500;
@@ -495,7 +538,22 @@
     <header class="kiosk-header">
       <div class="kiosk-header-left">
         <div class="kiosk-header-icon" aria-hidden="true">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path
+              d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"
+            />
+            <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
+          </svg>
         </div>
         <div>
           <h1>BANH MI FACTORY</h1>
@@ -518,12 +576,22 @@
       <main class="kiosk-menu-area" aria-label="メニュー">
         <div class="kiosk-category-tabs">
           <nav role="tablist" aria-label="メニューカテゴリ">
-            <button type="button" role="tab" aria-selected="true" class="active" data-category="all">メニュー</button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected="true"
+              class="active"
+              data-category="all"
+            >
+              メニュー
+            </button>
           </nav>
         </div>
         <div class="kiosk-menu-grid">
           <div class="kiosk-menu-grid-inner" id="menu-grid">
-            <p class="kiosk-loading" id="menu-loading">メニューを読み込み中...</p>
+            <p class="kiosk-loading" id="menu-loading">
+              メニューを読み込み中...
+            </p>
           </div>
         </div>
       </main>
@@ -532,37 +600,95 @@
         <div class="kiosk-cart-header">
           <div class="kiosk-cart-header-left">
             <div class="kiosk-cart-header-icon" aria-hidden="true">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
+                <path d="M3 6h18" />
+                <path d="M16 10a4 4 0 0 1-8 0" />
+              </svg>
             </div>
             <div>
               <h2>ご注文内容</h2>
               <p class="count" id="cart-count"></p>
             </div>
           </div>
-          <button type="button" class="kiosk-cart-clear" id="cart-clear" disabled aria-label="注文を全てクリア">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+          <button
+            type="button"
+            class="kiosk-cart-clear"
+            id="cart-clear"
+            disabled
+            aria-label="注文を全てクリア"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M3 6h18" />
+              <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+              <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+              <line x1="10" y1="11" x2="10" y2="17" />
+              <line x1="14" y1="11" x2="14" y2="17" />
+            </svg>
             クリア
           </button>
         </div>
         <div class="kiosk-cart-list">
           <div class="kiosk-cart-empty" id="cart-empty">
             <div class="kiosk-cart-empty-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
+                <path d="M3 6h18" />
+                <path d="M16 10a4 4 0 0 1-8 0" />
+              </svg>
             </div>
             <p>商品が選択されていません</p>
             <p class="hint">左のメニューからお選びください</p>
           </div>
-          <ul id="cart-items" style="display: none;"></ul>
+          <ul id="cart-items" style="display: none"></ul>
         </div>
         <div class="kiosk-cart-footer">
-          <div class="kiosk-cart-totals" id="cart-totals" style="display: none;">
-            <div class="row"><span>小計</span><span class="value" id="cart-subtotal">¥0</span></div>
-            <div class="row"><span>消費税（10%）</span><span class="value" id="cart-tax">¥0</span></div>
-            <div class="row total-row"><span>合計</span><span class="value" id="cart-total">¥0</span></div>
+          <div class="kiosk-cart-totals" id="cart-totals" style="display: none">
+            <div class="row">
+              <span>小計</span><span class="value" id="cart-subtotal">¥0</span>
+            </div>
+            <div class="row">
+              <span>消費税（10%）</span
+              ><span class="value" id="cart-tax">¥0</span>
+            </div>
+            <div class="row total-row">
+              <span>合計</span><span class="value" id="cart-total">¥0</span>
+            </div>
           </div>
           <button type="button" class="kiosk-pay-btn" id="pay-btn" disabled>
             <span>お支払いへ進む</span>
-            <span class="methods">クレジットカード　|　交通系IC　|　QR決済</span>
+            <span class="methods"
+              >クレジットカード　|　交通系IC　|　QR決済</span
+            >
           </button>
         </div>
       </aside>
@@ -586,7 +712,8 @@
             const v0 = variations[0];
             const variationId = v0.id;
             const priceMoney = v0.item_variation_data?.price_money;
-            const amount = priceMoney != null ? Number(priceMoney.amount) || 0 : 0;
+            const amount =
+              priceMoney != null ? Number(priceMoney.amount) || 0 : 0;
             const name = (obj.item_data.name || '商品').trim();
             items.push({
               id: variationId,
@@ -606,7 +733,8 @@
           if (loading) loading.remove();
           grid.innerHTML = '';
           if (items.length === 0) {
-            grid.innerHTML = '<p class="kiosk-loading">メニューがありません</p>';
+            grid.innerHTML =
+              '<p class="kiosk-loading">メニューがありません</p>';
             return;
           }
           menuItems = items;
@@ -614,26 +742,39 @@
             const card = document.createElement('button');
             card.type = 'button';
             card.className = 'kiosk-menu-card';
-            card.setAttribute('aria-label', item.name + ' を追加 ' + item.price + '円');
+            card.setAttribute(
+              'aria-label',
+              item.name + ' を追加 ' + item.price + '円',
+            );
             card.innerHTML =
               '<div class="kiosk-menu-card-image">' +
-                '<div class="placeholder">' + (item.nameEn || item.name) + '</div>' +
+              '<div class="placeholder">' +
+              (item.nameEn || item.name) +
+              '</div>' +
               '</div>' +
               '<div class="kiosk-menu-card-body">' +
-                '<h3>' + escapeHtml(item.name) + '</h3>' +
-                (item.nameEn ? '<p class="name-en">' + escapeHtml(item.nameEn) + '</p>' : '') +
-                '<div class="kiosk-menu-card-footer">' +
-                  '<span class="kiosk-menu-card-price">¥' + item.price.toLocaleString() + '</span>' +
-                  '<span class="kiosk-menu-card-add" aria-hidden="true">' +
-                    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
-                  '</span>' +
-                '</div>' +
+              '<h3>' +
+              escapeHtml(item.name) +
+              '</h3>' +
+              (item.nameEn
+                ? '<p class="name-en">' + escapeHtml(item.nameEn) + '</p>'
+                : '') +
+              '<div class="kiosk-menu-card-footer">' +
+              '<span class="kiosk-menu-card-price">¥' +
+              item.price.toLocaleString() +
+              '</span>' +
+              '<span class="kiosk-menu-card-add" aria-hidden="true">' +
+              '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
+              '</span>' +
+              '</div>' +
               '</div>';
             card.dataset.id = item.id;
             card.dataset.variationId = item.variationId;
             card.dataset.name = item.name;
             card.dataset.price = String(item.price);
-            card.addEventListener('click', function () { addToCart(item); });
+            card.addEventListener('click', function () {
+              addToCart(item);
+            });
             grid.appendChild(card);
           });
         }
@@ -647,7 +788,9 @@
         let cart = [];
 
         function addToCart(item) {
-          const existing = cart.find(function (ci) { return ci.id === item.id; });
+          const existing = cart.find(function (ci) {
+            return ci.id === item.id;
+          });
           if (existing) {
             existing.quantity += 1;
           } else {
@@ -663,11 +806,15 @@
         }
 
         function updateQuantity(id, delta) {
-          const ci = cart.find(function (c) { return c.id === id; });
+          const ci = cart.find(function (c) {
+            return c.id === id;
+          });
           if (!ci) return;
           ci.quantity += delta;
           if (ci.quantity <= 0) {
-            cart = cart.filter(function (c) { return c.id !== id; });
+            cart = cart.filter(function (c) {
+              return c.id !== id;
+            });
           }
           renderCart();
         }
@@ -688,64 +835,110 @@
           const taxEl = document.getElementById('cart-tax');
           const totalEl = document.getElementById('cart-total');
 
-          const totalItems = cart.reduce(function (sum, ci) { return sum + ci.quantity; }, 0);
-          const subtotal = cart.reduce(function (sum, ci) { return sum + ci.price * ci.quantity; }, 0);
+          const totalItems = cart.reduce(function (sum, ci) {
+            return sum + ci.quantity;
+          }, 0);
+          const subtotal = cart.reduce(function (sum, ci) {
+            return sum + ci.price * ci.quantity;
+          }, 0);
           const tax = Math.floor(subtotal * 0.1);
           const grandTotal = subtotal + tax;
 
           if (cart.length === 0) {
             if (emptyEl) emptyEl.style.display = 'flex';
-            if (listEl) { listEl.style.display = 'none'; listEl.innerHTML = ''; }
+            if (listEl) {
+              listEl.style.display = 'none';
+              listEl.innerHTML = '';
+            }
             if (totalsEl) totalsEl.style.display = 'none';
             if (countEl) countEl.textContent = '';
             if (clearBtn) clearBtn.disabled = true;
-            if (payBtn) { payBtn.disabled = true; payBtn.classList.remove('has-items'); }
+            if (payBtn) {
+              payBtn.disabled = true;
+              payBtn.classList.remove('has-items');
+            }
           } else {
             if (emptyEl) emptyEl.style.display = 'none';
             if (listEl) {
               listEl.style.display = 'block';
-              listEl.innerHTML = cart.map(function (ci) {
-                const lineTotal = ci.price * ci.quantity;
-                return '<li class="kiosk-cart-item">' +
-                  '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">' +
+              listEl.innerHTML = cart
+                .map(function (ci) {
+                  const lineTotal = ci.price * ci.quantity;
+                  return (
+                    '<li class="kiosk-cart-item">' +
+                    '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">' +
                     '<div style="flex:1;min-width:0;">' +
-                      '<p class="kiosk-cart-item-name">' + escapeHtml(ci.name) + '</p>' +
-                      '<p class="kiosk-cart-item-meta">¥' + ci.price.toLocaleString() + ' × ' + ci.quantity + '</p>' +
+                    '<p class="kiosk-cart-item-name">' +
+                    escapeHtml(ci.name) +
+                    '</p>' +
+                    '<p class="kiosk-cart-item-meta">¥' +
+                    ci.price.toLocaleString() +
+                    ' × ' +
+                    ci.quantity +
+                    '</p>' +
                     '</div>' +
-                    '<span class="kiosk-cart-item-line-total">¥' + lineTotal.toLocaleString() + '</span>' +
-                  '</div>' +
-                  '<div class="kiosk-cart-item-controls">' +
-                    '<button type="button" class="' + (ci.quantity === 1 ? 'destructive' : '') + '" data-id="' + escapeHtml(ci.id) + '" data-delta="-1" aria-label="' + (ci.quantity === 1 ? '削除' : '1つ減らす') + '">' +
-                      (ci.quantity === 1 ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>' : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>') +
+                    '<span class="kiosk-cart-item-line-total">¥' +
+                    lineTotal.toLocaleString() +
+                    '</span>' +
+                    '</div>' +
+                    '<div class="kiosk-cart-item-controls">' +
+                    '<button type="button" class="' +
+                    (ci.quantity === 1 ? 'destructive' : '') +
+                    '" data-id="' +
+                    escapeHtml(ci.id) +
+                    '" data-delta="-1" aria-label="' +
+                    (ci.quantity === 1 ? '削除' : '1つ減らす') +
+                    '">' +
+                    (ci.quantity === 1
+                      ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>'
+                      : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>') +
                     '</button>' +
-                    '<span class="qty" aria-live="polite">' + ci.quantity + '</span>' +
-                    '<button type="button" data-id="' + escapeHtml(ci.id) + '" data-delta="1" aria-label="1つ追加">' +
-                      '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
+                    '<span class="qty" aria-live="polite">' +
+                    ci.quantity +
+                    '</span>' +
+                    '<button type="button" data-id="' +
+                    escapeHtml(ci.id) +
+                    '" data-delta="1" aria-label="1つ追加">' +
+                    '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
                     '</button>' +
-                  '</div>' +
-                '</li>';
-              }).join('');
+                    '</div>' +
+                    '</li>'
+                  );
+                })
+                .join('');
             }
-            listEl.querySelectorAll('button[data-id][data-delta]').forEach(function (btn) {
-              btn.addEventListener('click', function () {
-                updateQuantity(btn.dataset.id, parseInt(btn.dataset.delta, 10));
+            listEl
+              .querySelectorAll('button[data-id][data-delta]')
+              .forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                  updateQuantity(
+                    btn.dataset.id,
+                    parseInt(btn.dataset.delta, 10),
+                  );
+                });
               });
-            });
             if (totalsEl) {
               totalsEl.style.display = 'block';
-              if (subtotalEl) subtotalEl.textContent = '¥' + subtotal.toLocaleString();
+              if (subtotalEl)
+                subtotalEl.textContent = '¥' + subtotal.toLocaleString();
               if (taxEl) taxEl.textContent = '¥' + tax.toLocaleString();
-              if (totalEl) totalEl.textContent = '¥' + grandTotal.toLocaleString();
+              if (totalEl)
+                totalEl.textContent = '¥' + grandTotal.toLocaleString();
             }
             if (countEl) countEl.textContent = totalItems + '点';
             if (clearBtn) clearBtn.disabled = false;
-            if (payBtn) { payBtn.disabled = false; payBtn.classList.add('has-items'); }
+            if (payBtn) {
+              payBtn.disabled = false;
+              payBtn.classList.add('has-items');
+            }
           }
         }
 
         function goToPayment() {
           if (cart.length === 0) return;
-          const subtotal = cart.reduce(function (sum, ci) { return sum + ci.price * ci.quantity; }, 0);
+          const subtotal = cart.reduce(function (sum, ci) {
+            return sum + ci.price * ci.quantity;
+          }, 0);
           const tax = Math.floor(subtotal * 0.1);
           const grandTotal = subtotal + tax;
           const lineItemsForApi = cart.map(function (ci) {
@@ -756,23 +949,36 @@
             };
           });
           try {
-            sessionStorage.setItem(CART_STORAGE_KEY, JSON.stringify(lineItemsForApi));
+            sessionStorage.setItem(
+              CART_STORAGE_KEY,
+              JSON.stringify(lineItemsForApi),
+            );
             sessionStorage.setItem(TOTAL_STORAGE_KEY, String(grandTotal));
           } catch (e) {}
-          window.location.href = '/examples/card-charge.html?amount=' + encodeURIComponent(grandTotal) + '&kiosk=1';
+          window.location.href =
+            '/examples/card-charge.html?amount=' +
+            encodeURIComponent(grandTotal) +
+            '&kiosk=1';
         }
 
-        document.getElementById('cart-clear').addEventListener('click', clearCart);
-        document.getElementById('pay-btn').addEventListener('click', goToPayment);
+        document
+          .getElementById('cart-clear')
+          .addEventListener('click', clearCart);
+        document
+          .getElementById('pay-btn')
+          .addEventListener('click', goToPayment);
 
         fetch('/api/items')
-          .then(function (res) { return res.json(); })
+          .then(function (res) {
+            return res.json();
+          })
           .then(function (data) {
             const items = buildMenuFromCatalog(data.objects || []);
             renderMenuGrid(items);
           })
           .catch(function () {
-            document.getElementById('menu-grid').innerHTML = '<p class="kiosk-loading">メニューを読み込めませんでした</p>';
+            document.getElementById('menu-grid').innerHTML =
+              '<p class="kiosk-loading">メニューを読み込めませんでした</p>';
           });
       })();
     </script>

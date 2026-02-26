@@ -82,12 +82,12 @@ _Remember: Do not add your credentials to git!_
 
 3. **再デプロイ**後、`/examples/card-charge.html` にアクセスすると、本番の Square.js と認証情報で決済が動作します。画面上部に「本番環境」と出ていれば本番設定です（「サンドボックス」のままなら環境変数を見直してください）。
 
-| 環境変数 | サンドボックス | 本番 |
-|----------|----------------|------|
-| `SQUARE_ENVIRONMENT` | `sandbox` | `production` |
-| `SQUARE_ACCESS_TOKEN` | Sandbox 用トークン | 本番用トークン |
+| 環境変数                | サンドボックス                                 | 本番                  |
+| ----------------------- | ---------------------------------------------- | --------------------- |
+| `SQUARE_ENVIRONMENT`    | `sandbox`                                      | `production`          |
+| `SQUARE_ACCESS_TOKEN`   | Sandbox 用トークン                             | 本番用トークン        |
 | `SQUARE_APPLICATION_ID` | （任意・未設定時はサンドボックス用デフォルト） | 本番用 Application ID |
-| `LOCATION_ID` | （任意・未設定時はサンドボックス用デフォルト） | 本番用 Location ID |
+| `LOCATION_ID`           | （任意・未設定時はサンドボックス用デフォルト） | 本番用 Location ID    |
 
 本番決済では実際の請求が発生するため、少額でテストすることを推奨します。
 

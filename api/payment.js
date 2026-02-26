@@ -25,7 +25,9 @@ const crypto = require('crypto');
 function readBody(req) {
   return new Promise((resolve, reject) => {
     let body = '';
-    req.on('data', (chunk) => { body += chunk; });
+    req.on('data', (chunk) => {
+      body += chunk;
+    });
     req.on('end', () => resolve(body));
     req.on('error', reject);
   });
@@ -81,12 +83,20 @@ module.exports = async function handler(req, res) {
 
   const amount_num = payload.amount != null ? Number(payload.amount) : 940;
   const location_id = process.env.LOCATION_ID || payload.locationId;
-  const catalog_object_id = payload.catalog_object_id ? String(payload.catalog_object_id).trim() : null;
+  const catalog_object_id = payload.catalog_object_id
+    ? String(payload.catalog_object_id).trim()
+    : null;
   const product_name = (payload.productName || 'バインミー').slice(0, 200);
-  const pickup_display_name = (payload.customerName || 'Customer').slice(0, 100);
+  const pickup_display_name = (payload.customerName || 'Customer').slice(
+    0,
+    100,
+  );
 
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), SQUARE_REQUEST_TIMEOUT_MS);
+  const timeoutId = setTimeout(
+    () => controller.abort(),
+    SQUARE_REQUEST_TIMEOUT_MS,
+  );
 
   const square_headers = {
     'Square-Version': SQUARE_API_VERSION,
@@ -131,7 +141,11 @@ module.exports = async function handler(req, res) {
       order_line_items = [{ catalog_object_id, quantity: '1' }];
     } else {
       order_line_items = [
-        { name: product_name, quantity: '1', base_price_money: { amount: amount_num, currency: 'JPY' } },
+        {
+          name: product_name,
+          quantity: '1',
+          base_price_money: { amount: amount_num, currency: 'JPY' },
+        },
       ];
     }
 
@@ -165,7 +179,9 @@ module.exports = async function handler(req, res) {
 
     if (!order_res.ok) {
       clearTimeout(timeoutId);
-      const err_body = order_data.errors ? { errors: order_data.errors } : { error: order_data.message || 'Order creation failed' };
+      const err_body = order_data.errors
+        ? { errors: order_data.errors }
+        : { error: order_data.message || 'Order creation failed' };
       res.status(order_res.status).json(err_body);
       return;
     }
@@ -173,7 +189,9 @@ module.exports = async function handler(req, res) {
     const order_id = order_data.order?.id;
     if (!order_id) {
       clearTimeout(timeoutId);
-      res.status(500).json({ error: 'Order created but no order id in response' });
+      res
+        .status(500)
+        .json({ error: 'Order created but no order id in response' });
       return;
     }
 
@@ -187,10 +205,14 @@ module.exports = async function handler(req, res) {
     };
 
     if (payload.customerId) payment_body.customer_id = payload.customerId;
-    if (payload.verificationToken) payment_body.verification_token = payload.verificationToken;
+    if (payload.verificationToken)
+      payment_body.verification_token = payload.verificationToken;
 
     if (payload.customerName || payload.productName) {
-      const customer_name = (payload.customerName || '（未入力）').slice(0, 100);
+      const customer_name = (payload.customerName || '（未入力）').slice(
+        0,
+        100,
+      );
       const customer_notes = (payload.customerNotes || '').trim().slice(0, 200);
       const note = customer_notes
         ? `${product_name} / ${customer_name} / ${customer_notes}`
@@ -209,7 +231,9 @@ module.exports = async function handler(req, res) {
     const payment_data = await payment_res.json();
 
     if (!payment_res.ok) {
-      const err_body = payment_data.errors ? { errors: payment_data.errors } : { error: payment_data.message || 'Payment failed' };
+      const err_body = payment_data.errors
+        ? { errors: payment_data.errors }
+        : { error: payment_data.message || 'Payment failed' };
       res.status(payment_res.status).json(err_body);
       return;
     }

@@ -57,7 +57,9 @@ async function createPayment(req, res) {
       if (payload.customerName || payload.productName) {
         const productName = payload.productName || '注文';
         const customerName = payload.customerName || '（未入力）';
-        const customerNotes = payload.customerNotes ? payload.customerNotes.trim() : '';
+        const customerNotes = payload.customerNotes
+          ? payload.customerNotes.trim()
+          : '';
         payment.note = customerNotes
           ? `${productName} / ${customerName} / ${customerNotes}`
           : `${productName} / ${customerName}`;

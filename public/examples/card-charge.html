@@ -8,20 +8,26 @@
     <style>
       /* TOKYO BANH MI STAND - Vietnamese sandwich shop theme */
       :root {
-        --banhmi-orange: #E85D04;
-        --banhmi-orange-light: #F48C06;
-        --banhmi-orange-dark: #D00000;
-        --banhmi-green: #2D6A4F;
-        --banhmi-green-light: #40916C;
-        --banhmi-green-pale: #95D5B2;
-        --banhmi-cream: #FFF8F0;
-        --banhmi-white: #FFFFFF;
-        --banhmi-brown: #6B4423;
+        --banhmi-orange: #e85d04;
+        --banhmi-orange-light: #f48c06;
+        --banhmi-orange-dark: #d00000;
+        --banhmi-green: #2d6a4f;
+        --banhmi-green-light: #40916c;
+        --banhmi-green-pale: #95d5b2;
+        --banhmi-cream: #fff8f0;
+        --banhmi-white: #ffffff;
+        --banhmi-brown: #6b4423;
       }
 
       body.banhmi-page {
-        font-family: 'Hiragino Kaku Gothic ProN', 'Yu Gothic', 'Meiryo', sans-serif;
-        background: linear-gradient(135deg, var(--banhmi-cream) 0%, #FFE5D9 50%, #E8F5E9 100%);
+        font-family:
+          'Hiragino Kaku Gothic ProN', 'Yu Gothic', 'Meiryo', sans-serif;
+        background: linear-gradient(
+          135deg,
+          var(--banhmi-cream) 0%,
+          #ffe5d9 50%,
+          #e8f5e9 100%
+        );
         margin: 0;
         min-height: 100vh;
         padding: 24px 16px;
@@ -134,7 +140,9 @@
         border: 2px solid var(--banhmi-green-pale);
         border-radius: 12px;
         cursor: pointer;
-        transition: border-color 0.2s, background 0.2s;
+        transition:
+          border-color 0.2s,
+          background 0.2s;
       }
 
       .menu-option:last-child {
@@ -161,7 +169,7 @@
         background: rgba(232, 93, 4, 0.08);
       }
 
-      .menu-option input[type="radio"] {
+      .menu-option input[type='radio'] {
         width: 20px;
         height: 20px;
         margin: 0;
@@ -235,7 +243,7 @@
         margin-left: 4px;
       }
 
-      .order-info input[type="text"],
+      .order-info input[type='text'],
       .order-info textarea {
         width: 100%;
         padding: 12px 16px;
@@ -246,7 +254,7 @@
         transition: border-color 0.2s;
       }
 
-      .order-info input[type="text"]:focus,
+      .order-info input[type='text']:focus,
       .order-info textarea:focus {
         outline: none;
         border-color: var(--banhmi-orange);
@@ -273,7 +281,11 @@
       }
 
       .banhmi-page #card-button {
-        background: linear-gradient(135deg, var(--banhmi-orange) 0%, var(--banhmi-orange-dark) 100%);
+        background: linear-gradient(
+          135deg,
+          var(--banhmi-orange) 0%,
+          var(--banhmi-orange-dark) 100%
+        );
         margin-top: 20px;
         font-weight: 600;
         font-size: 1.1rem;
@@ -283,7 +295,11 @@
       }
 
       .banhmi-page #card-button:hover {
-        background: linear-gradient(135deg, var(--banhmi-orange-light) 0%, var(--banhmi-orange) 100%);
+        background: linear-gradient(
+          135deg,
+          var(--banhmi-orange-light) 0%,
+          var(--banhmi-orange) 100%
+        );
         box-shadow: 0 6px 16px rgba(232, 93, 4, 0.4);
       }
 
@@ -308,7 +324,8 @@
         padding: 12px 16px;
       }
 
-      .banhmi-page #payment-status-container.is-failure.has-custom-message:after {
+      .banhmi-page
+        #payment-status-container.is-failure.has-custom-message:after {
         content: none;
       }
 
@@ -374,12 +391,18 @@
       let menuItems = [];
 
       function getSelectedAmount() {
-        const selected = document.querySelector('input[name="menu-item"]:checked');
-        return selected ? parseInt(selected.value, 10) : (menuItems[0]?.amount ?? 940);
+        const selected = document.querySelector(
+          'input[name="menu-item"]:checked',
+        );
+        return selected
+          ? parseInt(selected.value, 10)
+          : (menuItems[0]?.amount ?? 940);
       }
 
       function getSelectedProductName() {
-        const selected = document.querySelector('input[name="menu-item"]:checked');
+        const selected = document.querySelector(
+          'input[name="menu-item"]:checked',
+        );
         if (!selected) return menuItems[0]?.name ?? '注文';
         const label = selected.closest('.menu-option');
         const nameEl = label?.querySelector('.menu-option-name');
@@ -387,7 +410,9 @@
       }
 
       function getSelectedVariationId() {
-        const selected = document.querySelector('input[name="menu-item"]:checked');
+        const selected = document.querySelector(
+          'input[name="menu-item"]:checked',
+        );
         return selected?.dataset?.variationId ?? '';
       }
 
@@ -397,9 +422,14 @@
         const btnEl = document.getElementById('card-button');
         if (totalEl) totalEl.textContent = `¥${amount.toLocaleString()}`;
         if (btnEl) btnEl.textContent = `¥${amount.toLocaleString()} で支払う`;
-        document.querySelectorAll('.menu-option').forEach((el) => el.classList.remove('selected'));
-        const checkedRadio = document.querySelector('input[name="menu-item"]:checked');
-        if (checkedRadio) checkedRadio.closest('.menu-option').classList.add('selected');
+        document
+          .querySelectorAll('.menu-option')
+          .forEach((el) => el.classList.remove('selected'));
+        const checkedRadio = document.querySelector(
+          'input[name="menu-item"]:checked',
+        );
+        if (checkedRadio)
+          checkedRadio.closest('.menu-option').classList.add('selected');
       }
 
       function buildMenuItemsFromCatalog(objects) {
@@ -412,7 +442,8 @@
           const v0 = variations[0];
           const variationId = v0.id;
           const priceMoney = v0.item_variation_data?.price_money;
-          const amount = priceMoney != null ? Number(priceMoney.amount) || 0 : 0;
+          const amount =
+            priceMoney != null ? Number(priceMoney.amount) || 0 : 0;
           const name = (obj.item_data.name || '商品').trim();
           items.push({ variationId, name, amount });
         }
@@ -424,7 +455,8 @@
         if (!container) return;
         container.innerHTML = '';
         if (items.length === 0) {
-          container.innerHTML = '<p class="menu-error">メニューを読み込めませんでした。</p>';
+          container.innerHTML =
+            '<p class="menu-error">メニューを読み込めませんでした。</p>';
           return;
         }
         menuItems = items;
@@ -444,9 +476,11 @@
           label.appendChild(wrap);
           container.appendChild(label);
         });
-        document.querySelectorAll('input[name="menu-item"]').forEach((radio) => {
-          radio.addEventListener('change', updatePaymentDisplay);
-        });
+        document
+          .querySelectorAll('input[name="menu-item"]')
+          .forEach((radio) => {
+            radio.addEventListener('change', updatePaymentDisplay);
+          });
         updatePaymentDisplay();
       }
 
@@ -461,12 +495,16 @@
         try {
           const res = await fetch('/api/items');
           const data = await res.json();
-          if (!res.ok) throw new Error(data?.errors?.[0]?.detail || data?.error || 'Failed to load menu');
+          if (!res.ok)
+            throw new Error(
+              data?.errors?.[0]?.detail || data?.error || 'Failed to load menu',
+            );
           const items = buildMenuItemsFromCatalog(data.objects || []);
           renderMenuList(items);
         } catch (e) {
           if (container) {
-            container.innerHTML = '<p class="menu-error">メニューを読み込めませんでした。</p>';
+            container.innerHTML =
+              '<p class="menu-error">メニューを読み込めませんでした。</p>';
           }
           console.error('Load menu error:', e);
           menuItems = [];
@@ -482,7 +520,15 @@
 
       const PAYMENT_REQUEST_TIMEOUT_MS = 25000;
 
-      async function createPayment(token, amount, customerName, customerNotes, productName, catalogObjectId, lineItems) {
+      async function createPayment(
+        token,
+        amount,
+        customerName,
+        customerNotes,
+        productName,
+        catalogObjectId,
+        lineItems,
+      ) {
         const payload = {
           locationId,
           sourceId: token,
@@ -500,7 +546,10 @@
         const body = JSON.stringify(payload);
 
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), PAYMENT_REQUEST_TIMEOUT_MS);
+        const timeoutId = setTimeout(
+          () => controller.abort(),
+          PAYMENT_REQUEST_TIMEOUT_MS,
+        );
 
         let paymentResponse;
         try {
@@ -514,9 +563,13 @@
           });
         } catch (e) {
           if (e.name === 'AbortError') {
-            throw new Error('通信がタイムアウトしました。しばらくして再度お試しください。');
+            throw new Error(
+              '通信がタイムアウトしました。しばらくして再度お試しください。',
+            );
           }
-          throw new Error('通信エラーが発生しました。ネットワークを確認して再度お試しください。');
+          throw new Error(
+            '通信エラーが発生しました。ネットワークを確認して再度お試しください。',
+          );
         } finally {
           clearTimeout(timeoutId);
         }
@@ -529,8 +582,15 @@
         let message = errorBody;
         try {
           const parsed = JSON.parse(errorBody);
-          if (parsed && typeof parsed.error === 'string') message = parsed.error;
-          else if (parsed && parsed.errors && Array.isArray(parsed.errors) && parsed.errors[0]?.detail) message = parsed.errors[0].detail;
+          if (parsed && typeof parsed.error === 'string')
+            message = parsed.error;
+          else if (
+            parsed &&
+            parsed.errors &&
+            Array.isArray(parsed.errors) &&
+            parsed.errors[0]?.detail
+          )
+            message = parsed.errors[0].detail;
         } catch (_) {}
         throw new Error(message);
       }
@@ -592,7 +652,10 @@
       let kioskLineItems = [];
       if (isKioskMode) {
         try {
-          const totalStr = urlParams.get('amount') || sessionStorage.getItem('kioskTotal') || '0';
+          const totalStr =
+            urlParams.get('amount') ||
+            sessionStorage.getItem('kioskTotal') ||
+            '0';
           kioskAmount = parseInt(totalStr, 10) || 0;
           const cartStr = sessionStorage.getItem('kioskCart');
           if (cartStr) kioskLineItems = JSON.parse(cartStr);
@@ -612,15 +675,26 @@
           const envBadge = document.getElementById('env-badge');
           if (envBadge) {
             envBadge.style.display = 'inline-block';
-            envBadge.textContent = config.squareEnvironment === 'production' ? '本番環境' : 'サンドボックス';
-            envBadge.className = 'env-badge env-' + (config.squareEnvironment === 'production' ? 'production' : 'sandbox');
+            envBadge.textContent =
+              config.squareEnvironment === 'production'
+                ? '本番環境'
+                : 'サンドボックス';
+            envBadge.className =
+              'env-badge env-' +
+              (config.squareEnvironment === 'production'
+                ? 'production'
+                : 'sandbox');
           }
         } catch (e) {
-          const statusContainer = document.getElementById('payment-status-container');
+          const statusContainer = document.getElementById(
+            'payment-status-container',
+          );
           statusContainer.className = 'missing-credentials';
           statusContainer.style.visibility = 'visible';
-          statusContainer.textContent = '設定を読み込めませんでした。環境変数を確認してください。';
-          document.getElementById('menu-list').innerHTML = '<p class="menu-error">設定を読み込めませんでした。</p>';
+          statusContainer.textContent =
+            '設定を読み込めませんでした。環境変数を確認してください。';
+          document.getElementById('menu-list').innerHTML =
+            '<p class="menu-error">設定を読み込めませんでした。</p>';
           return;
         }
 
@@ -631,20 +705,26 @@
           if (!isKioskMode) {
             await loadAndRenderMenu();
           } else {
-            document.getElementById('menu-list').innerHTML = '<p class="menu-loading">キオスクからの注文</p>';
+            document.getElementById('menu-list').innerHTML =
+              '<p class="menu-loading">キオスクからの注文</p>';
             const menuSection = document.querySelector('.menu-section');
             if (menuSection) menuSection.style.display = 'none';
             if (kioskAmount > 0) {
-              document.getElementById('payment-total-amount').textContent = '¥' + kioskAmount.toLocaleString();
-              document.getElementById('card-button').textContent = '¥' + kioskAmount.toLocaleString() + ' で支払う';
+              document.getElementById('payment-total-amount').textContent =
+                '¥' + kioskAmount.toLocaleString();
+              document.getElementById('card-button').textContent =
+                '¥' + kioskAmount.toLocaleString() + ' で支払う';
             }
           }
 
           if (!window.Square) {
-            const statusContainer = document.getElementById('payment-status-container');
+            const statusContainer = document.getElementById(
+              'payment-status-container',
+            );
             statusContainer.className = 'missing-credentials';
             statusContainer.style.visibility = 'visible';
-            statusContainer.textContent = 'Square.js の読み込みに失敗しました。';
+            statusContainer.textContent =
+              'Square.js の読み込みに失敗しました。';
             return;
           }
 
@@ -652,10 +732,13 @@
           try {
             payments = window.Square.payments(appId, locationId);
           } catch {
-            const statusContainer = document.getElementById('payment-status-container');
+            const statusContainer = document.getElementById(
+              'payment-status-container',
+            );
             statusContainer.className = 'missing-credentials';
             statusContainer.style.visibility = 'visible';
-            statusContainer.textContent = 'Application ID / Location ID が正しくありません。';
+            statusContainer.textContent =
+              'Application ID / Location ID が正しくありません。';
             return;
           }
 
@@ -668,51 +751,73 @@
           }
 
           async function handlePaymentMethodSubmission(event, card) {
-          event.preventDefault();
+            event.preventDefault();
 
-          const customerNameInput = document.getElementById('customer-name');
-          const customerNotesInput = document.getElementById('customer-notes');
-          const customerName = customerNameInput?.value || '';
-          const customerNotes = customerNotesInput?.value || '';
+            const customerNameInput = document.getElementById('customer-name');
+            const customerNotesInput =
+              document.getElementById('customer-notes');
+            const customerName = customerNameInput?.value || '';
+            const customerNotes = customerNotesInput?.value || '';
 
-          if (!customerName.trim()) {
-            customerNameInput?.focus();
-            customerNameInput?.reportValidity?.();
-            return;
-          }
-
-          const amount = isKioskMode ? kioskAmount : getSelectedAmount();
-          const productName = isKioskMode ? 'キオスク注文' : getSelectedProductName();
-          const catalogObjectId = isKioskMode ? null : getSelectedVariationId();
-          const lineItems = isKioskMode && kioskLineItems.length > 0 ? kioskLineItems : null;
-
-          const originalButtonText = cardButton.textContent;
-          try {
-            cardButton.disabled = true;
-            cardButton.textContent = '処理中...';
-            const token = await tokenize(card, amount);
-            const paymentResults = await createPayment(token, amount, customerName, customerNotes, productName, catalogObjectId, lineItems);
-            const orderId = paymentResults?.payment?.orderId || '';
-            if (isKioskMode) {
-              try { sessionStorage.removeItem('kioskCart'); sessionStorage.removeItem('kioskTotal'); } catch (e) {}
+            if (!customerName.trim()) {
+              customerNameInput?.focus();
+              customerNameInput?.reportValidity?.();
+              return;
             }
-            document.getElementById('payment-form').style.display = 'none';
-            document.getElementById('payment-status-container').style.display = 'none';
-            const successOrderIdEl = document.getElementById('success-order-id');
-            if (successOrderIdEl) successOrderIdEl.textContent = orderId;
-            document.getElementById('success-view').style.display = 'block';
-            console.debug('Payment Success', paymentResults);
-          } catch (e) {
-            cardButton.disabled = false;
-            cardButton.textContent = originalButtonText;
-            displayPaymentResults('FAILURE');
-            const statusContainer = document.getElementById('payment-status-container');
-            const msg = e && e.message ? e.message : '決済に失敗しました。';
-            statusContainer.textContent = msg;
-            statusContainer.classList.add('has-custom-message');
-            console.error(e && e.message ? e.message : e);
+
+            const amount = isKioskMode ? kioskAmount : getSelectedAmount();
+            const productName = isKioskMode
+              ? 'キオスク注文'
+              : getSelectedProductName();
+            const catalogObjectId = isKioskMode
+              ? null
+              : getSelectedVariationId();
+            const lineItems =
+              isKioskMode && kioskLineItems.length > 0 ? kioskLineItems : null;
+
+            const originalButtonText = cardButton.textContent;
+            try {
+              cardButton.disabled = true;
+              cardButton.textContent = '処理中...';
+              const token = await tokenize(card, amount);
+              const paymentResults = await createPayment(
+                token,
+                amount,
+                customerName,
+                customerNotes,
+                productName,
+                catalogObjectId,
+                lineItems,
+              );
+              const orderId = paymentResults?.payment?.orderId || '';
+              if (isKioskMode) {
+                try {
+                  sessionStorage.removeItem('kioskCart');
+                  sessionStorage.removeItem('kioskTotal');
+                } catch (e) {}
+              }
+              document.getElementById('payment-form').style.display = 'none';
+              document.getElementById(
+                'payment-status-container',
+              ).style.display = 'none';
+              const successOrderIdEl =
+                document.getElementById('success-order-id');
+              if (successOrderIdEl) successOrderIdEl.textContent = orderId;
+              document.getElementById('success-view').style.display = 'block';
+              console.debug('Payment Success', paymentResults);
+            } catch (e) {
+              cardButton.disabled = false;
+              cardButton.textContent = originalButtonText;
+              displayPaymentResults('FAILURE');
+              const statusContainer = document.getElementById(
+                'payment-status-container',
+              );
+              const msg = e && e.message ? e.message : '決済に失敗しました。';
+              statusContainer.textContent = msg;
+              statusContainer.classList.add('has-custom-message');
+              console.error(e && e.message ? e.message : e);
+            }
           }
-        }
 
           const cardButton = document.getElementById('card-button');
           cardButton.addEventListener('click', async function (event) {
@@ -730,7 +835,12 @@
       <header class="banhmi-header">
         <h1>TOKYO BANH MI STAND</h1>
         <p>ベトナムサンドイッチ専門店</p>
-        <p id="env-badge" class="env-badge" style="display: none;" aria-live="polite"></p>
+        <p
+          id="env-badge"
+          class="env-badge"
+          style="display: none"
+          aria-live="polite"
+        ></p>
       </header>
 
       <section class="menu-section">
@@ -744,25 +854,46 @@
         <h2>お支払い情報</h2>
         <div class="payment-total">
           <span class="payment-total-label">支払合計金額</span>
-          <span id="payment-total-amount" class="payment-total-amount">¥940</span>
+          <span id="payment-total-amount" class="payment-total-amount"
+            >¥940</span
+          >
         </div>
         <form id="payment-form">
           <div class="order-info">
-            <label for="customer-name">お名前 <span class="required">（必須）</span></label>
-            <input type="text" id="customer-name" name="customer-name" placeholder="受け取り時の名前" required maxlength="50" />
+            <label for="customer-name"
+              >お名前 <span class="required">（必須）</span></label
+            >
+            <input
+              type="text"
+              id="customer-name"
+              name="customer-name"
+              placeholder="受け取り時の名前"
+              required
+              maxlength="50"
+            />
           </div>
           <div class="order-info">
-            <label for="customer-notes">備考 <span class="field-optional">（任意）</span></label>
-            <textarea id="customer-notes" name="customer-notes" placeholder="例：パクチー抜き、辛さ控えめ など"></textarea>
+            <label for="customer-notes"
+              >備考 <span class="field-optional">（任意）</span></label
+            >
+            <textarea
+              id="customer-notes"
+              name="customer-notes"
+              placeholder="例：パクチー抜き、辛さ控えめ など"
+            ></textarea>
           </div>
-          <p class="postal-code-note">※ カードの郵便番号は日本の形式（例：100-0001）でご入力ください。</p>
+          <p class="postal-code-note">
+            ※ カードの郵便番号は日本の形式（例：100-0001）でご入力ください。
+          </p>
           <div id="card-container"></div>
           <button id="card-button" type="button">¥940 で支払う</button>
         </form>
         <div id="payment-status-container"></div>
         <div id="success-view">
           <p class="success-title">ご注文ありがとうございます！</p>
-          <p class="success-order-id">注文ID: <span id="success-order-id"></span></p>
+          <p class="success-order-id">
+            注文ID: <span id="success-order-id"></span>
+          </p>
           <p class="success-note">カウンターでお待ちください</p>
         </div>
       </section>
