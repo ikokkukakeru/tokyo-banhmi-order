@@ -58,7 +58,7 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    await retry(async (bail, attempt) => {
+    await retry(async (bail) => {
       try {
         const cardReq = {
           idempotencyKey: payload.idempotencyKey,

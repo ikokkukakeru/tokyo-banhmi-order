@@ -151,9 +151,50 @@ async function serveStatic(req, res) {
   });
 }
 
+// Adapter so Vercel-style api handlers (res.status().json()) work with micro's send()
+function microAdapter(microRes) {
+  let statusCode = 200;
+  const headers = {};
+  return {
+    setHeader(name, value) {
+      headers[name] = value;
+    },
+    status(code) {
+      statusCode = code;
+      return this;
+    },
+    json(obj) {
+      Object.entries(headers).forEach(([k, v]) => microRes.setHeader(k, v));
+      send(microRes, statusCode, obj);
+    },
+    end() {
+      if (!microRes.finished) {
+        Object.entries(headers).forEach(([k, v]) => microRes.setHeader(k, v));
+        microRes.statusCode = statusCode;
+        microRes.end();
+      }
+    },
+  };
+}
+
+// ローカル開発時: /api/config と /api/items を api/*.js のハンドラで処理（Vercel と共通）
+async function handleApiConfig(req, res) {
+  const adapter = microAdapter(res);
+  const apiConfig = require('./api/config');
+  await apiConfig(req, adapter);
+}
+
+async function handleApiItems(req, res) {
+  const adapter = microAdapter(res);
+  const apiItems = require('./api/items');
+  await apiItems(req, adapter);
+}
+
 // export routes to be served by micro
 module.exports = router(
   post('/payment', createPayment),
   post('/card', storeCard),
+  get('/api/config', handleApiConfig),
+  get('/api/items', handleApiItems),
   get('/*', serveStatic),
 );
