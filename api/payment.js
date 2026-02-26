@@ -252,7 +252,7 @@ module.exports = async function handler(req, res) {
     clearTimeout(timeoutId);
     if (ex.name === 'AbortError') {
       res.status(504).json({
-        error: '通信がタイムアウトしました。しばらくして再度お試しください。',
+        error: '通信がタイムアウトしました。しばらくして再度お試しください！',
       });
       return;
     }
